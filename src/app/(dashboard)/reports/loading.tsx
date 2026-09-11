@@ -1,0 +1,14 @@
+import { PageHeader } from "@/components/ui/page-header";
+import { TableSkeleton } from "@/components/ui/skeleton";
+
+export default function Loading() {
+  return (
+    <>
+      <PageHeader
+        title="گزارش‌ها"
+        description="فروش، موجودی و لاگ اقدامات مدیران"
+      />
+      <TableSkeleton />
+    </>
+  );
+}

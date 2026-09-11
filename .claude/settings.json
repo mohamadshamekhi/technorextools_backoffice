@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | grep -q 'abzar-api\\.postman_collection\\.json' && npm run gen:api --silent --prefix \"$CLAUDE_PROJECT_DIR\" 2>/dev/null || true",
+            "statusMessage": "Regenerating docs/api from Postman collection"
+          }
+        ]
+      }
+    ]
+  }
+}
