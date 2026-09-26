@@ -67,6 +67,7 @@ const columns: Column<PaymentMethod>[] = [
     className: "text-end",
     cell: (m) => (
       <RowActionsMenu
+        viewHref={`/payment-methods/${m.id}`}
         editHref={`/payment-methods/${m.id}`}
         onDelete={deletePaymentMethodAction.bind(null, m.id)}
       />

@@ -8,17 +8,18 @@ export type BackofficeArticle = {
   title: string;
   slug: string;
   excerpt: string | null;
+  /** فقط خواندنی — با آپلود رسانه (`ownerType=ARTICLE`, `purpose=COVER`) ست می‌شود. */
   coverImage: string | null;
   body: string;
   publishedAt: string | null;
   createdAt: string;
 };
 
+/** بدنه دیگر `coverImage` نمی‌گیرد؛ کاور با `POST /backoffice/media/upload` آپلود می‌شود. */
 export type CreateArticleInput = {
   title: string;
   slug: string;
   excerpt?: string | null;
-  coverImage?: string | null;
   body: string;
   publishedAt?: string | null;
 };
@@ -49,11 +50,13 @@ export type SeoMeta = {
   entityId: string;
   metaTitle: string | null;
   metaDescription: string | null;
+  /** فقط خواندنی — با آپلود رسانه روی خود موجودیت (`purpose=OG_IMAGE`) ست می‌شود. */
   ogImage: string | null;
   canonicalUrl: string | null;
 };
 
-export type UpsertSeoInput = SeoMeta;
+/** بدنه دیگر `ogImage` نمی‌گیرد؛ تصویر OG با آپلود رسانه روی همان موجودیت ست می‌شود. */
+export type UpsertSeoInput = Omit<SeoMeta, "ogImage">;
 
 /** GET /backoffice/content/articles */
 export const listArticles = (query: ListQuery = {}) =>

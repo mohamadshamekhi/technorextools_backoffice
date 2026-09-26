@@ -105,7 +105,7 @@ export default async function CommentsPage({
 
       <DataTable
         columns={columns}
-        rows={comments}
+        rows={comments.items}
         getRowKey={(c) => c.id}
         emptyMessage="نظری در این وضعیت نیست."
       />

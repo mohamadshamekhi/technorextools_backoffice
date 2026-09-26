@@ -56,7 +56,7 @@ export default async function DashboardPage() {
   ];
 
   const recentOrders = orders.status === "fulfilled" ? orders.value.items : [];
-  const lowStock = inventory.status === "fulfilled" ? inventory.value.lowStock : [];
+  const lowStock = inventory.status === "fulfilled" ? inventory.value.items : [];
 
   return (
     <>
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
             ) : null
           }
         >
-          {salesData ? (
+          {salesData?.daily ? (
             <DashboardSparkline
               points={salesData.daily.map((d) => ({
                 date: d.date,
@@ -155,7 +155,7 @@ export default async function DashboardPage() {
                   key={order.orderNumber}
                   className="grid grid-cols-2 items-center gap-3 py-3 text-sm sm:grid-cols-4"
                 >
-                  <span dir="ltr" className="text-start font-medium">
+                  <span dir="ltr" className="text-end font-medium">
                     {order.orderNumber}
                   </span>
                   <span className="truncate text-muted">

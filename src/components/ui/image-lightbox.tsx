@@ -96,7 +96,7 @@ export function ImageLightbox({
             type="button"
             onClick={() => onIndexChange((index - 1 + images.length) % images.length)}
             aria-label="تصویر قبلی"
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-background/10 p-2 text-primary-foreground hover:bg-background/20"
+            className="absolute start-3 top-1/2 -translate-y-1/2 rounded-full bg-background/10 p-2 text-primary-foreground hover:bg-background/20"
           >
             <ChevronRight className="size-6" />
           </button>
@@ -115,7 +115,7 @@ export function ImageLightbox({
             type="button"
             onClick={() => onIndexChange((index + 1) % images.length)}
             aria-label="تصویر بعدی"
-            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-background/10 p-2 text-primary-foreground hover:bg-background/20"
+            className="absolute end-3 top-1/2 -translate-y-1/2 rounded-full bg-background/10 p-2 text-primary-foreground hover:bg-background/20"
           >
             <ChevronLeft className="size-6" />
           </button>

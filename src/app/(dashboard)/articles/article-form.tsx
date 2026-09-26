@@ -9,9 +9,10 @@ import {
   FormMessage,
 } from "@/components/ui/form-controls";
 import { RichTextField } from "@/components/ui/rich-text-editor";
-import { ImageUploader } from "@/components/ui/image-uploader";
+import { ImageUploader, uploadOwnedImage } from "@/components/ui/image-uploader";
 import { createArticleAction, updateArticleAction } from "./actions";
 import { clearFieldError, invalid, type ActionResult, type FieldErrors } from "@/lib/forms";
+import { SLUG_HINT, SLUG_INVALID_MESSAGE, SLUG_PATTERN, sanitizeSlugInput } from "@/lib/slug";
 import type { BackofficeArticle } from "@/lib/api/backoffice/content";
 
 export function ArticleForm({ article }: { article?: BackofficeArticle }) {
@@ -29,6 +30,9 @@ export function ArticleForm({ article }: { article?: BackofficeArticle }) {
   const [slug, setSlug] = useState(article?.slug ?? "");
   const [excerpt, setExcerpt] = useState(article?.excerpt ?? "");
   const [coverImage, setCoverImage] = useState(article?.coverImage ?? "");
+  // در حالت ساخت هنوز شناسه‌ای نیست؛ فایل نگه داشته می‌شود تا بعد از ساخت مقاله آپلود شود
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [createdId, setCreatedId] = useState<string | null>(null);
   const [body, setBody] = useState(article?.body ?? "");
   const [publishedAt, setPublishedAt] = useState(
     article?.publishedAt ? article.publishedAt.slice(0, 10) : "",
@@ -39,6 +43,7 @@ export function ArticleForm({ article }: { article?: BackofficeArticle }) {
     const errs: FieldErrors = {};
     if (!title.trim()) errs.title = "عنوان الزامی است.";
     if (!slug.trim()) errs.slug = "اسلاگ الزامی است.";
+    else if (!SLUG_PATTERN.test(slug.trim())) errs.slug = SLUG_INVALID_MESSAGE;
     if (!body.trim()) errs.body = "متن مقاله الزامی است.";
     if (Object.keys(errs).length > 0) {
       setResult(invalid(errs));
@@ -49,18 +54,55 @@ export function ArticleForm({ article }: { article?: BackofficeArticle }) {
       title: title.trim(),
       slug: slug.trim(),
       excerpt: excerpt.trim() || null,
-      coverImage: coverImage || null,
       body,
       publishedAt: publishedAt || null,
     };
     startTransition(async () => {
-      const res = article
-        ? await updateArticleAction(article.id, payload)
-        : await createArticleAction(payload);
-      setResult(res);
-      if (res.ok && !isEdit && "data" in res && res.data) {
-        router.push(`/articles/${res.data.id}`);
+      if (article) {
+        setResult(await updateArticleAction(article.id, payload));
+        return;
       }
+
+      // مقاله باید اول ساخته شود تا کاور با ownerId آپلود شود
+      let articleId = createdId;
+      if (!articleId) {
+        const res = await createArticleAction(payload);
+        if (!res.ok) {
+          setResult(res);
+          return;
+        }
+        articleId = res.data?.id ?? null;
+        setCreatedId(articleId);
+      } else {
+        const res = await updateArticleAction(articleId, payload);
+        if (!res.ok) {
+          setResult(res);
+          return;
+        }
+      }
+      if (!articleId) return;
+
+      if (coverFile) {
+        const up = await uploadOwnedImage(coverFile, {
+          purpose: "COVER",
+          folder: "articles",
+          alt: title.trim() || "کاور مقاله",
+          ownerType: "ARTICLE",
+          ownerId: articleId,
+        });
+        if (!up.ok) {
+          setResult({
+            ok: false,
+            message: `مقاله ثبت شد اما بارگذاری کاور ناموفق بود: ${up.message}`,
+          });
+          return;
+        }
+        setCoverFile(null);
+        setCoverImage(up.url);
+      }
+
+      setResult({ ok: true });
+      router.push(`/articles/${articleId}`);
     });
   }
 
@@ -78,8 +120,9 @@ export function ArticleForm({ article }: { article?: BackofficeArticle }) {
         label="اسلاگ"
         name="slug"
         dir="ltr"
+        hint={SLUG_HINT}
         value={slug}
-        onChange={setSlug}
+        onChange={(v) => setSlug(sanitizeSlugInput(v))}
         errors={errors}
         onErrorClear={clearError}
       />
@@ -100,6 +143,14 @@ export function ArticleForm({ article }: { article?: BackofficeArticle }) {
             setCoverImage(url ?? "");
             clearError("coverImage");
           }}
+          onFileSelect={setCoverFile}
+          owner={
+            article
+              ? { type: "ARTICLE", id: article.id }
+              : createdId
+                ? { type: "ARTICLE", id: createdId }
+                : null
+          }
           purpose="COVER"
           folder="articles"
           alt={title || "کاور مقاله"}

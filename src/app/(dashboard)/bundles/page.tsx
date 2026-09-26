@@ -27,14 +27,29 @@ const columns: Column<BackofficeBundle>[] = [
     cell: (b) => formatNumber(b.items.length),
   },
   {
-    key: "status",
-    header: "وضعیت",
+    key: "stock",
+    header: "بسته‌های قابل فروش",
+    className: "tabular-nums",
     cell: (b) =>
-      b.isActive ? (
-        <Badge tone="success">فعال</Badge>
+      b.packagesInStock === undefined ? (
+        <span className="text-muted">—</span>
       ) : (
-        <Badge tone="neutral">غیرفعال</Badge>
+        formatNumber(b.packagesInStock)
       ),
+  },
+  {
+    key: "status",
+    header: "وضعیت انتشار",
+    // مبنا `available` بک‌اند است؛ پکیج می‌تواند فعال ولی به‌دلیل اقلام منتشر نشده باشد
+    cell: (b) => {
+      const available = b.available ?? b.isActive;
+      if (available) return <Badge tone="success">منتشرشده</Badge>;
+      return (
+        <Badge tone={b.isActive ? "warning" : "neutral"}>
+          {b.isActive ? "منتشر نشده (اقلام)" : "غیرفعال"}
+        </Badge>
+      );
+    },
   },
   {
     key: "actions",

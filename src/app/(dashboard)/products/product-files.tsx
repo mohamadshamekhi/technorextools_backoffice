@@ -2,10 +2,11 @@
 
 import { useRef, useState, useTransition } from "react";
 import type { ComponentType } from "react";
-import { Box, FileText, Loader2, Upload, X } from "lucide-react";
+import { Box, FileText, ImageIcon, Loader2, Upload, X } from "lucide-react";
 import {
   uploadProductCatalogAction,
   uploadProductModelAction,
+  uploadProductExplodedViewAction,
   deleteProductMediaAction,
 } from "./actions";
 import type { ActionResult } from "@/lib/forms";
@@ -147,18 +148,20 @@ function FileSlot({
   );
 }
 
-/** تب «فایل‌ها»ی محصول: کاتالوگ (PDF) و فایل سه‌بعدی، هرکدام یک فایل. */
+/** تب «فایل‌ها»ی محصول: کاتالوگ (PDF)، فایل سه‌بعدی و عکس انفجاری، هرکدام یک فایل. */
 export function ProductFiles({
   productId,
   initialCatalog,
   initialModel,
+  initialExplodedView,
 }: {
   productId: string;
   initialCatalog: MediaView | null;
   initialModel: MediaView | null;
+  initialExplodedView: MediaView | null;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <FileSlot
         productId={productId}
         icon={FileText}
@@ -180,6 +183,17 @@ export function ProductFiles({
         mediaKind="MODEL"
         initial={initialModel}
         upload={uploadProductModelAction}
+      />
+      <FileSlot
+        productId={productId}
+        icon={ImageIcon}
+        label="عکس انفجاری"
+        accept="image/*"
+        hint="تصویر انفجاری قطعات محصول — JPEG، PNG، WebP یا GIF، حداکثر ۵۰ مگابایت."
+        purpose="EXPLODED_VIEW"
+        mediaKind="IMAGE"
+        initial={initialExplodedView}
+        upload={uploadProductExplodedViewAction}
       />
     </div>
   );

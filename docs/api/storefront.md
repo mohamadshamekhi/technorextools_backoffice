@@ -176,6 +176,14 @@
 
 - auth: (inherits collection default: Bearer {{accessToken}})
 
+## Payment Methods
+
+### GET /storefront/payment-methods
+
+**List Payment Methods**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
 ## Warranty
 
 ### GET /storefront/warranty/verify?serial={{warrantySerial}}
@@ -282,7 +290,23 @@
 {
   "addressId": "{{addressId}}",
   "shippingMethodId": "{{shippingMethodId}}",
-  "redeemPoints": 0
+  "redeemPoints": 0,
+  "paymentMethod": "online"
+}
+```
+
+### POST /storefront/checkout
+
+**Start Checkout (Cash)**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+```json
+{
+  "addressId": "{{addressId}}",
+  "shippingMethodId": "{{shippingMethodId}}",
+  "redeemPoints": 0,
+  "paymentMethod": "cash"
 }
 ```
 

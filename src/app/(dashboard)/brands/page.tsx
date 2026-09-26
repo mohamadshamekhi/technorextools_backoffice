@@ -13,6 +13,22 @@ import { deleteBrandAction } from "./actions";
 export const metadata: Metadata = { title: "برندها" };
 
 const columns: Column<BackofficeBrand>[] = [
+  {
+    key: "logo",
+    header: "لوگو",
+    className: "w-px",
+    cell: (b) =>
+      b.logoUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={b.logoUrl}
+          alt={`لوگوی ${b.title}`}
+          className="size-10 rounded-md border border-border object-contain bg-surface"
+        />
+      ) : (
+        <div className="size-10 rounded-md border border-border bg-surface" />
+      ),
+  },
   { key: "title", header: "عنوان", cell: (b) => b.title },
   { key: "slug", header: "اسلاگ", cell: (b) => <span dir="ltr">{b.slug}</span> },
   {

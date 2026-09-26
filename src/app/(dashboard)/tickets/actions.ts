@@ -5,12 +5,14 @@ import { revalidatePath } from "next/cache";
 import { ticketsApi } from "@/lib/api";
 import type { TicketStatus } from "@/lib/api/backoffice/moderation";
 
+/** `mediaIds`: شناسه‌ی فایل‌های از پیش آپلودشده (حداکثر ۵ تا). */
 export async function replyTicketAction(
   id: string,
   body: string,
+  mediaIds: string[] = [],
 ): Promise<ActionResult> {
   try {
-    await ticketsApi.reply(id, body);
+    await ticketsApi.reply(id, body, mediaIds);
     revalidatePath(`/tickets/${id}`);
     return { ok: true };
   } catch (error) {

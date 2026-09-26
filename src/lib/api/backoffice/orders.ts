@@ -55,6 +55,9 @@ export type OrderDetail = OrderListItem & {
   /** `null` برای سفارش‌های قدیمی‌ای که آدرس‌شان حذف شده */
   address: OrderAddress | null;
   statusHistory: { status: OrderStatus; note: string | null; at: string }[];
+  /** شرکت حمل و کد رهگیری — فقط پس از ثبت وضعیت «ارسال‌شده» پر می‌شوند */
+  carrier?: string | null;
+  trackingNumber?: string | null;
   payments: {
     gateway: string;
     status: string;
@@ -67,6 +70,10 @@ export type OrderDetail = OrderListItem & {
 export type SetOrderStatusInput = {
   status: OrderStatus;
   note?: string;
+  /** فقط هنگام `shipped` معنا دارد — نام شرکت حمل (مثلاً تیپاکس) */
+  carrier?: string;
+  /** فقط هنگام `shipped` — کد رهگیری مرسوله؛ در پیگیری عمومی سفارش نمایش داده می‌شود */
+  trackingNumber?: string;
 };
 
 /** GET /backoffice/orders */

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import {
   SelectField,
   TextField,
@@ -18,13 +19,22 @@ import {
 export function OrderStatusForm({
   orderNumber,
   currentStatus,
+  currentCarrier = "",
+  currentTrackingNumber = "",
 }: {
   orderNumber: string;
   currentStatus: OrderStatus;
+  currentCarrier?: string;
+  currentTrackingNumber?: string;
 }) {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [status, setStatus] = useState<OrderStatus>(currentStatus);
   const [note, setNote] = useState("");
+  const [carrier, setCarrier] = useState(currentCarrier);
+  const [trackingNumber, setTrackingNumber] = useState(currentTrackingNumber);
+  // بک‌اند اطلاعات مرسوله را فقط هنگام «ارسال‌شده» ذخیره می‌کند
+  const isShipped = status === "shipped";
   const [result, setResult] = useState<ActionResult | null>(null);
   const errors = result && !result.ok ? result.fieldErrors : undefined;
 
@@ -36,9 +46,15 @@ export function OrderStatusForm({
     e.preventDefault();
     setResult(null);
     startTransition(async () => {
-      const res = await setOrderStatusAction(orderNumber, status, note);
+      const res = await setOrderStatusAction(orderNumber, status, {
+        note,
+        carrier,
+        trackingNumber,
+      });
       setResult(res);
       if (res.ok) setNote("");
+      // در تعارض (۴۰۹) یا هر خطای دیگر، وضعیت تازه‌ی سفارش از سرور خوانده شود
+      else router.refresh();
     });
   }
 
@@ -57,6 +73,30 @@ export function OrderStatusForm({
           </option>
         ))}
       </SelectField>
+
+      {isShipped && (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField
+            label="شرکت حمل (اختیاری)"
+            name="carrier"
+            value={carrier}
+            onChange={setCarrier}
+            errors={errors}
+            onErrorClear={clearError}
+            placeholder="مثلاً: تیپاکس"
+          />
+          <TextField
+            label="کد رهگیری مرسوله (اختیاری)"
+            name="trackingNumber"
+            dir="ltr"
+            value={trackingNumber}
+            onChange={setTrackingNumber}
+            errors={errors}
+            onErrorClear={clearError}
+            placeholder="TPX-123456"
+          />
+        </div>
+      )}
 
       <TextField
         label="یادداشت (اختیاری)"

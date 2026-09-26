@@ -11,7 +11,7 @@
 - `POST /auth/logout` — Logout
 - `PATCH /auth/me` — Update Profile
 
-## Backoffice — `backoffice.md` (93)
+## Backoffice — `backoffice.md` (95)
 
 - `GET /backoffice/access/permissions` — List Permissions
 - `GET /backoffice/access/roles` — List Roles
@@ -35,6 +35,7 @@
 - `DELETE /backoffice/attributes/{{attributeId}}` — Delete Attribute
 - `GET /backoffice/brands` — List Brands
 - `POST /backoffice/brands` — Create Brand
+- `POST /backoffice/brands/import` — Import Brands (crawler)
 - `PATCH /backoffice/brands/{{brandId}}` — Update Brand
 - `DELETE /backoffice/brands/{{brandId}}` — Delete Brand
 - `GET /backoffice/products?skip=0&take=20&search&categoryId={{categoryId}}&brandId={{brandId}}&isActive&isAmazingDeal` — List Products
@@ -54,15 +55,15 @@
 - `PATCH /backoffice/orders/{{orderNumber}}/status` — Set Order Status
 - `PATCH /backoffice/orders/{{orderNumber}}/confirm-cash-payment` — Confirm Cash Payment
 - `GET /backoffice/payments?skip=0&take=20` — List Payments
-- `GET /backoffice/payment-methods` — List Payment Methods
-- `GET /backoffice/payment-methods/{{id}}` — Payment Method Detail
-- `POST /backoffice/payment-methods` — Create Payment Method
-- `PATCH /backoffice/payment-methods/{{id}}` — Update Payment Method
-- `DELETE /backoffice/payment-methods/{{id}}` — Delete Payment Method
 - `GET /backoffice/shipping-methods` — List Shipping Methods
 - `POST /backoffice/shipping-methods` — Create Shipping Method
 - `PATCH /backoffice/shipping-methods/{{shippingMethodId}}` — Update Shipping Method
 - `DELETE /backoffice/shipping-methods/{{shippingMethodId}}` — Delete Shipping Method
+- `GET /backoffice/payment-methods` — List Payment Methods
+- `POST /backoffice/payment-methods` — Create Payment Method
+- `GET /backoffice/payment-methods/{{paymentMethodId}}` — Payment Method Detail
+- `PATCH /backoffice/payment-methods/{{paymentMethodId}}` — Update Payment Method
+- `DELETE /backoffice/payment-methods/{{paymentMethodId}}` — Delete Payment Method
 - `GET /backoffice/discounts?skip=0&take=20` — List Discounts
 - `GET /backoffice/discounts/{{discountId}}` — Discount Detail
 - `GET /backoffice/discounts/{{discountId}}/usages` — Discount Usages
@@ -78,6 +79,7 @@
 - `GET /backoffice/warranties?orderId={{orderId}}` — List Order Warranties
 - `POST /backoffice/warranties` — Issue Warranty
 - `GET /backoffice/repairs?skip=0&take=20` — List Repair Requests
+- `PATCH /backoffice/repairs/{{repairId}}` — Update Repair (technician findings)
 - `PATCH /backoffice/repairs/{{repairId}}/status` — Set Repair Status
 - `GET /backoffice/content/articles?skip=0&take=20` — List Articles
 - `GET /backoffice/content/articles/{{articleId}}` — Get Article
@@ -107,7 +109,7 @@
 - `PATCH /backoffice/media/{{mediaId}}` — Update Media
 - `DELETE /backoffice/media/{{mediaId}}` — Delete Media
 
-## Storefront — `storefront.md` (44)
+## Storefront — `storefront.md` (46)
 
 - `GET /storefront/catalog/categories` — Category Tree
 - `GET /storefront/catalog/brands` — List Brands
@@ -130,6 +132,7 @@
 - `GET /storefront/content/seo?entityType=product&entityId={{productId}}` — SEO Meta
 - `GET /storefront/content/settings/public` — Public Settings
 - `GET /storefront/shipping/methods` — List Shipping Methods
+- `GET /storefront/payment-methods` — List Payment Methods
 - `GET /storefront/warranty/verify?serial={{warrantySerial}}` — Verify Warranty
 - `GET /storefront/addresses` — List Addresses
 - `POST /storefront/addresses` — Create Address
@@ -140,6 +143,7 @@
 - `DELETE /storefront/wishlist/{{productId}}` — Remove From Wishlist
 - `POST /storefront/checkout/quote` — Checkout Quote
 - `POST /storefront/checkout` — Start Checkout
+- `POST /storefront/checkout` — Start Checkout (Cash)
 - `POST /storefront/checkout/{{orderNumber}}/pay` — Retry Payment
 - `GET /storefront/orders?skip=0&take=20` — List My Orders
 - `GET /storefront/orders/{{orderNumber}}` — Order Detail

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { SearchField } from "@/components/ui/search-field";
 import { LinkButton } from "@/components/ui/link-button";
 import { RowActionsMenu } from "@/components/ui/row-actions-menu";
-import { Plus } from "lucide-react";
+import { Plus, Percent } from "lucide-react";
 import { productsApi, guarded } from "@/lib/api";
 import type { BackofficeProduct } from "@/lib/api/backoffice/products";
 import { parsePageParams } from "@/lib/pagination";
@@ -38,6 +38,7 @@ const columns: Column<BackofficeProduct>[] = [
           <Badge tone="neutral">پیش‌نویس</Badge>
         )}
         {p.isAmazingDeal && <Badge tone="warning">شگفت‌انگیز</Badge>}
+        {p.isFeatured && <Badge tone="info">هیرو</Badge>}
       </div>
     ),
   },
@@ -76,6 +77,10 @@ export default async function ProductsPage({
         actions={
           <>
             <SearchField placeholder="نام محصول…" />
+            <LinkButton href="/products/bulk-price-update" variant="ghost">
+              <Percent className="size-4" />
+              تغییر قیمت گروهی
+            </LinkButton>
             <LinkButton href="/products/new">
               <Plus className="size-4" />
               محصول جدید

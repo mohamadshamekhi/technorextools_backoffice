@@ -43,7 +43,7 @@ export function SearchField({
 
   return (
     <div className="relative w-full sm:w-72">
-      <Search className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
+      <Search className="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted" />
       <input
         type="search"
         value={value}
@@ -53,7 +53,7 @@ export function SearchField({
         className="w-full rounded-lg border bg-surface py-2 pe-9 ps-3 text-sm outline-none focus:border-primary"
       />
       {isPending && (
-        <Loader2 className="absolute left-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted" />
+        <Loader2 className="absolute end-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted" />
       )}
     </div>
   );

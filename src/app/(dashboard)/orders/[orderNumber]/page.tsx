@@ -114,6 +114,8 @@ export default async function OrderDetailPage({
             <OrderStatusForm
               orderNumber={orderNumber}
               currentStatus={order.status}
+              currentCarrier={order.carrier ?? ""}
+              currentTrackingNumber={order.trackingNumber ?? ""}
             />
           </Card>
         </div>

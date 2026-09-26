@@ -166,34 +166,43 @@ function PriceTiersEditor({
 
   return (
     <div className="space-y-2">
-      <p className="text-sm font-medium">لایه‌های قیمت عمده</p>
+      <div>
+        <p className="text-sm font-medium">لایه‌های قیمت عمده</p>
+        <p className="text-xs text-muted">
+          برای خرید عمده، از یک تعداد مشخص به بالا قیمت واحد متفاوتی اعمال کنید؛ مثلاً از ۱۰ عدد به بالا هر واحد ۱۴٬۷۰۰٬۰۰۰ ریال.
+        </p>
+      </div>
       {rows.length === 0 && (
         <p className="text-xs text-muted">لایه‌ای تعریف نشده است.</p>
       )}
       {rows.map((row, i) => (
-        <div key={i} className="flex flex-wrap items-center gap-2">
-          <TextInput
-            aria-label="حداقل تعداد"
-            type="number"
-            dir="ltr"
-            min={1}
-            value={String(row.minQty)}
-            onChange={(e) => update(i, { minQty: Number(e.target.value) || 0 })}
-            className="w-28"
-            placeholder="از تعداد"
-          />
-          <TextInput
-            aria-label="قیمت واحد"
-            type="number"
-            dir="ltr"
-            min={0}
-            value={String(row.unitPrice)}
-            onChange={(e) =>
-              update(i, { unitPrice: Number(e.target.value) || 0 })
-            }
-            className="w-40"
-            placeholder="قیمت واحد"
-          />
+        <div key={i} className="flex flex-wrap items-end gap-2 rounded-lg border p-2">
+          <label className="flex flex-col gap-1 text-xs text-muted">
+            حداقل تعداد
+            <TextInput
+              type="number"
+              dir="ltr"
+              min={1}
+              value={String(row.minQty)}
+              onChange={(e) => update(i, { minQty: Number(e.target.value) || 0 })}
+              className="w-28"
+              placeholder="از تعداد"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-xs text-muted">
+            قیمت واحد (ریال)
+            <TextInput
+              type="number"
+              dir="ltr"
+              min={0}
+              value={String(row.unitPrice)}
+              onChange={(e) =>
+                update(i, { unitPrice: Number(e.target.value) || 0 })
+              }
+              className="w-40"
+              placeholder="قیمت واحد"
+            />
+          </label>
           <button
             type="button"
             onClick={() => setRows((prev) => prev.filter((_, j) => j !== i))}

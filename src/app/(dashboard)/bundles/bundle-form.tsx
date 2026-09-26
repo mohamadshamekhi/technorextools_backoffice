@@ -2,19 +2,26 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Plus, Trash2 } from "lucide-react";
 import {
   TextField,
   TextInput,
-  SelectInput,
   CheckboxField,
   SubmitButton,
   FormMessage,
 } from "@/components/ui/form-controls";
-import { createBundleAction, updateBundleAction } from "./actions";
+import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/searchable-select";
+import {
+  createBundleAction,
+  updateBundleAction,
+  variantFieldKey,
+  type BundleSaveData,
+} from "./actions";
 import { clearFieldError, fieldError, invalid, type ActionResult, type FieldErrors } from "@/lib/forms";
-import type { BackofficeBundle } from "@/lib/api/backoffice/bundles";
+import { SLUG_HINT, SLUG_INVALID_MESSAGE, SLUG_PATTERN, sanitizeSlugInput } from "@/lib/slug";
+import type { BackofficeBundle, BundleWarning } from "@/lib/api/backoffice/bundles";
 import type { InventoryVariant } from "@/lib/api/backoffice/inventory";
+import { formatNumber } from "@/lib/format";
 
 type ItemRow = { variantId: string; qty: string };
 
@@ -36,6 +43,36 @@ function groupByProduct(
   return groups;
 }
 
+/** وضعیت موجودی/فعال‌بودن یک قلم پکیج */
+type ItemStatusInfo = { stockQty: number; isActive: boolean; label: string };
+
+/** چیپ موجودی/وضعیت یک واریانت در کنار قلم پکیج */
+function ItemStatus({ status }: { status: ItemStatusInfo | null }) {
+  if (!status) return null;
+  const blocking = !status.isActive || status.stockQty <= 0;
+  const label = !status.isActive
+    ? "غیرفعال"
+    : status.stockQty <= 0
+      ? "ناموجود"
+      : `موجودی: ${formatNumber(status.stockQty)}`;
+  return (
+    <span
+      className={`shrink-0 rounded-md px-2 py-1 text-xs ${
+        blocking ? "bg-warning-surface text-warning" : "bg-background text-muted"
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
+
+/** متن هشدار ناموجودی برای یک قلم پکیج */
+function warningMessage(warning: BundleWarning): string {
+  return `پکیج ذخیره شد ولی به‌دلیل ناموجودی ${warning.sku} (موجودی ${formatNumber(
+    warning.stockQty,
+  )} از ${formatNumber(warning.requiredQty)} مورد نیاز) در سایت نمایش داده نمی‌شود.`;
+}
+
 export function BundleForm({
   bundle,
   variants,
@@ -45,11 +82,30 @@ export function BundleForm({
 }) {
   const productGroups = groupByProduct(variants);
   const variantById = new Map(variants.map((v) => [v.id, v]));
+  // شناسه محصول و SKU (سریال) هم قابل جست‌وجو باشند، نه فقط عنوان
+  const variantOptions: SearchableSelectOption[] = productGroups.flatMap((group) =>
+    group.variants.map((v) => ({
+      value: v.id,
+      label: variantLabel(v),
+      group: group.productTitle,
+      searchText: `${v.sku} ${v.id} ${v.productId} ${group.productTitle}`,
+    })),
+  );
+  function optionsForRow(currentValue: string): SearchableSelectOption[] {
+    if (currentValue && !variantById.has(currentValue)) {
+      return [
+        { value: currentValue, label: `نامشخص — ${currentValue}`, searchText: currentValue },
+        ...variantOptions,
+      ];
+    }
+    return variantOptions;
+  }
   const router = useRouter();
   const isEdit = Boolean(bundle);
   const [isPending, startTransition] = useTransition();
-  const [result, setResult] = useState<ActionResult<{ id: string }> | null>(null);
+  const [result, setResult] = useState<ActionResult<BundleSaveData> | null>(null);
   const errors = result && !result.ok ? result.fieldErrors : undefined;
+  const savedWarnings = result?.ok ? (result.data?.warnings ?? []) : [];
 
   function clearError(field: string) {
     setResult((prev) => clearFieldError(prev, field));
@@ -68,6 +124,54 @@ export function BundleForm({
     })) ?? [{ variantId: "", qty: "1" }],
   );
 
+  /**
+   * وضعیت یک قلم: داده‌ی تازه‌ی فهرست موجودی مقدم است؛ اگر واریانت در فهرست نبود
+   * از `stockQty`/`isActive` خودِ پکیج (پاسخ بک‌اند) استفاده می‌شود.
+   */
+  function statusOf(variantId: string): ItemStatusInfo | null {
+    const variant = variantById.get(variantId);
+    if (variant) {
+      return {
+        stockQty: variant.stockQty,
+        isActive: variant.isActive,
+        label: `${variant.productTitle} — ${variantLabel(variant)}`,
+      };
+    }
+    const item = bundle?.items.find((i) => i.variantId === variantId);
+    if (item && (item.stockQty !== undefined || item.isActive !== undefined)) {
+      return {
+        stockQty: item.stockQty ?? 0,
+        isActive: item.isActive ?? true,
+        label: item.title ?? item.sku ?? variantId,
+      };
+    }
+    return null;
+  }
+
+  /** اقلام انتخاب‌شده به‌همراه واریانت متناظر (اگر در فهرست موجود باشد) */
+  const rowsWithVariant = items
+    .filter((row) => row.variantId)
+    .map((row) => ({ row, status: statusOf(row.variantId) }));
+
+  /** اقلامی که مانع نمایش پکیج در سایت می‌شوند */
+  const blockingItems = rowsWithVariant.filter(
+    ({ status }) => status && (!status.isActive || status.stockQty <= 0),
+  );
+
+  /** با موجودی فعلی، چند بسته از این پکیج قابل فروش است (اگر بک‌اند عدد نداده باشد) */
+  const computedPackagesInStock = rowsWithVariant.length
+    ? Math.min(
+        ...rowsWithVariant.map(({ row, status }) =>
+          status ? Math.floor(status.stockQty / (Number(row.qty) || 1)) : 0,
+        ),
+      )
+    : 0;
+  const packagesInStock = bundle?.packagesInStock ?? computedPackagesInStock;
+
+  // اگر بک‌اند `available` را بدهد همان مبناست؛ وگرنه از روی اقلام محاسبه می‌شود
+  const isVisibleOnSite =
+    bundle?.available ?? (isActive && rowsWithVariant.length > 0 && blockingItems.length === 0);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const cleanItems = items
@@ -76,6 +180,7 @@ export function BundleForm({
     const errs: FieldErrors = {};
     if (!title.trim()) errs.title = "عنوان پکیج الزامی است.";
     if (!slug.trim()) errs.slug = "اسلاگ الزامی است.";
+    else if (!SLUG_PATTERN.test(slug.trim())) errs.slug = SLUG_INVALID_MESSAGE;
     if (cleanItems.length === 0) errs.items = "حداقل یک قلم پکیج الزامی است.";
     if (Object.keys(errs).length > 0) {
       setResult(invalid(errs));
@@ -102,6 +207,43 @@ export function BundleForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {/* وضعیت واقعی انتشار: «فعال» بودن پکیج کافی نیست، همه‌ی اقلام هم باید فعال و موجود باشند */}
+      <div
+        className={`flex flex-wrap items-start gap-2 rounded-xl border p-3 text-sm ${
+          isVisibleOnSite
+            ? "border-success bg-success-surface text-success"
+            : "border-warning bg-warning-surface text-warning"
+        }`}
+      >
+        {isVisibleOnSite ? (
+          <CheckCircle2 className="mt-0.5 size-4 shrink-0" />
+        ) : (
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+        )}
+        <div className="space-y-1">
+          {isVisibleOnSite ? (
+            <p>
+              این پکیج در سایت نمایش داده می‌شود؛ با موجودی فعلی {formatNumber(packagesInStock)}{" "}
+              بسته قابل فروش است.
+            </p>
+          ) : (
+            <>
+              <p>این پکیج در سایت نمایش داده نمی‌شود.</p>
+              <ul className="list-inside list-disc text-xs">
+                {!isActive && <li>پکیج غیرفعال است.</li>}
+                {rowsWithVariant.length === 0 && <li>هیچ قلمی برای پکیج انتخاب نشده است.</li>}
+                {blockingItems.map(({ row, status }) => (
+                  <li key={row.variantId}>
+                    {status?.label ?? row.variantId}:{" "}
+                    {status && !status.isActive ? "غیرفعال است" : "موجودی صفر دارد"}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      </div>
+
       <TextField
         label="عنوان پکیج"
         name="title"
@@ -115,8 +257,9 @@ export function BundleForm({
           label="اسلاگ"
           name="slug"
           dir="ltr"
+          hint={SLUG_HINT}
           value={slug}
-          onChange={setSlug}
+          onChange={(v) => setSlug(sanitizeSlugInput(v))}
           errors={errors}
           onErrorClear={clearError}
         />
@@ -148,36 +291,29 @@ export function BundleForm({
         )}
         <div className="space-y-2">
           {items.map((row, i) => (
-            <div key={i} className="flex items-center gap-2 rounded-lg border p-2">
-              <SelectInput
-                aria-label="محصول / تنوع"
+            <div
+              key={i}
+              className={`flex items-center gap-2 rounded-lg border p-2 ${
+                fieldError(result, variantFieldKey(row.variantId))
+                  ? "border-danger bg-danger-surface"
+                  : ""
+              }`}
+            >
+              <SearchableSelect
+                ariaLabel="محصول / تنوع"
+                placeholder="— انتخاب محصول —"
+                searchPlaceholder="جست‌وجو با نام، SKU یا شناسه محصول…"
+                emptyMessage="محصولی با این مشخصات یافت نشد."
                 value={row.variantId}
-                onChange={(e) => {
+                options={optionsForRow(row.variantId)}
+                onChange={(next) => {
                   clearError("items");
                   setItems((prev) =>
-                    prev.map((r, j) =>
-                      j === i ? { ...r, variantId: e.target.value } : r,
-                    ),
+                    prev.map((r, j) => (j === i ? { ...r, variantId: next } : r)),
                   );
                 }}
                 className="min-w-0 flex-1"
-              >
-                <option value="">— انتخاب محصول —</option>
-                {row.variantId && !variantById.has(row.variantId) && (
-                  <option value={row.variantId}>
-                    نامشخص — {row.variantId}
-                  </option>
-                )}
-                {productGroups.map((group) => (
-                  <optgroup key={group.productId} label={group.productTitle}>
-                    {group.variants.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {variantLabel(v)}
-                      </option>
-                    ))}
-                  </optgroup>
-                ))}
-              </SelectInput>
+              />
               <div className="flex shrink-0 items-center gap-1.5">
                 <span className="text-xs text-muted">تعداد</span>
                 <TextInput
@@ -197,6 +333,7 @@ export function BundleForm({
                   className="w-16 text-center"
                 />
               </div>
+              <ItemStatus status={statusOf(row.variantId)} />
               <button
                 type="button"
                 onClick={() => {
@@ -224,13 +361,24 @@ export function BundleForm({
         </button>
       </div>
 
-      <div className="flex items-center gap-3">
-        <SubmitButton pending={isPending}>
-          {isEdit ? "ذخیره تغییرات" : "ساخت پکیج"}
-        </SubmitButton>
-        {result?.ok && <FormMessage tone="success">ذخیره شد.</FormMessage>}
-        {result && !result.ok && (
-          <FormMessage tone="danger">{result.message}</FormMessage>
+      <div className="space-y-3">
+        <div className="flex items-center gap-3">
+          <SubmitButton pending={isPending}>
+            {isEdit ? "ذخیره تغییرات" : "ساخت پکیج"}
+          </SubmitButton>
+          {result?.ok && <FormMessage tone="success">ذخیره شد.</FormMessage>}
+          {result && !result.ok && (
+            <FormMessage tone="danger">{result.message}</FormMessage>
+          )}
+        </div>
+
+        {/* ذخیره انجام شده ولی پکیج به‌دلیل ناموجودی در سایت دیده نمی‌شود */}
+        {savedWarnings.length > 0 && (
+          <ul className="space-y-1 rounded-xl border border-warning bg-warning-surface p-3 text-xs text-warning">
+            {savedWarnings.map((w) => (
+              <li key={w.variantId}>{warningMessage(w)}</li>
+            ))}
+          </ul>
         )}
       </div>
     </form>

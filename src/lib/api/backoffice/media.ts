@@ -12,17 +12,20 @@ export type MediaPurpose =
   | "LOGO"
   | "DATASHEET"
   | "MODEL_3D"
+  | "EXPLODED_VIEW"
   | "ATTACHMENT"
   | "OG_IMAGE";
 
 export type MediaOwnerType =
   | "PRODUCT"
   | "PRODUCT_VARIANT"
+  | "BUNDLE"
   | "BRAND"
   | "ARTICLE"
   | "CATEGORY"
   | "TICKET_MESSAGE"
-  | "REPAIR_REQUEST";
+  | "REPAIR_REQUEST"
+  | "SPARE_PART";
 
 export type MediaView = {
   id: string;

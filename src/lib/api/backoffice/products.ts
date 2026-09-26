@@ -1,6 +1,7 @@
 import { api, type Paginated } from "../http";
 import type { ListQuery } from "./common";
 import type { MediaView } from "./media";
+import type { ProductDocumentType } from "./product-documents";
 
 /**
  * محصولات بک‌آفیس — طبق schemaهای Zod واقعی سرویس (نه مستندات حدسی؛ مرجع کامل: مستند
@@ -34,11 +35,36 @@ export type BackofficeProduct = {
   brand: ProductRef | null;
   isActive: boolean;
   isAmazingDeal: boolean;
+  isFeatured: boolean;
   createdAt: string;
   images?: MediaView[];
   variants?: ProductVariant[];
   attributeValues?: ProductAttributeValue[];
   relatedProductIds?: string[];
+  parts?: ProductPart[];
+  highlights?: ProductHighlight[];
+  model3dHotspots?: Model3dHotspot[];
+  documents?: ProductDocument[];
+  /** آدرس فایل سه‌بعدی (از مدیا با purpose = MODEL_3D) */
+  model3dUrl?: string | null;
+};
+
+/** مختصات نسبی یک قطعه روی تصویر نقشه‌ی انفجاری — بین ۰ تا ۱۰۰ (درصد عرض/ارتفاع تصویر) */
+export type ProductPartHotspot = {
+  x: number;
+  y: number;
+};
+
+/**
+ * یک قطعه در نقشه‌ی انفجاری محصول (متمایز از دامنه‌ی «قطعات یدکی» در `spare-parts.ts`).
+ * `number` عدد صحیح ≥ ۱ و در هر محصول یکتاست؛ `hotspot` نال یعنی روی تصویر جانمایی نشده.
+ */
+export type ProductPart = {
+  number: number;
+  name: string;
+  code: string;
+  sellable?: boolean;
+  hotspot?: ProductPartHotspot | null;
 };
 
 export type ListProductsQuery = ListQuery & {
@@ -47,6 +73,7 @@ export type ListProductsQuery = ListQuery & {
   brandId?: string;
   isActive?: boolean;
   isAmazingDeal?: boolean;
+  isFeatured?: boolean;
 };
 
 export type CreateProductInput = {
@@ -61,6 +88,7 @@ export type CreateProductInput = {
   description: string | null;
   basePrice: number;
   isAmazingDeal?: boolean;
+  isFeatured?: boolean;
   isActive?: boolean;
 };
 
@@ -115,6 +143,31 @@ export const update = (productId: string, input: UpdateProductInput) =>
 export const remove = (productId: string) =>
   api.delete<void>(`/backoffice/products/${productId}`);
 
+/** بدنه‌ی POST /backoffice/products/bulk-price-update — دقیقاً یکی از brandId/categoryId/productIds باید ست شود */
+export type BulkPriceUpdateInput = {
+  brandId?: string;
+  categoryId?: string;
+  productIds?: string[];
+  mode: "fixed" | "percent";
+  direction: "increase" | "decrease";
+  value: number;
+};
+
+export type BulkPriceUpdateResult = {
+  matchedProducts: number;
+  updatedVariants: number;
+};
+
+/**
+ * POST /backoffice/products/bulk-price-update — تغییر یک‌جای basePrice محصولات مطابق‌شده
+ * به‌علاوه‌ی priceOverride هر واریانتی که override دارد. Perm: `products.manage`.
+ */
+export const bulkPriceUpdate = (input: BulkPriceUpdateInput) =>
+  api.post<BulkPriceUpdateResult>(
+    "/backoffice/products/bulk-price-update",
+    input,
+  );
+
 /** PUT /backoffice/products/{id}/attribute-values — کل مجموعه جایگزین می‌شود (حداکثر ۱۰۰) */
 export const replaceAttributeValues = (
   productId: string,
@@ -129,6 +182,15 @@ export const replaceAttributeValues = (
 export const replaceRelated = (productId: string, relatedProductIds: string[]) =>
   api.put<BackofficeProduct>(`/backoffice/products/${productId}/related`, {
     relatedProductIds,
+  });
+
+/**
+ * PUT /backoffice/products/{id}/parts — کل لیست قطعات نقشه‌ی انفجاری جایگزین می‌شود
+ * (آرایه‌ی خالی یعنی حذف همه؛ حداکثر ۳۰۰ قطعه). Perm: `products.manage`.
+ */
+export const replaceParts = (productId: string, parts: ProductPart[]) =>
+  api.put<BackofficeProduct>(`/backoffice/products/${productId}/parts`, {
+    parts,
   });
 
 /** POST /backoffice/products/{id}/variants */
@@ -147,4 +209,110 @@ export const updateVariant = (
   api.patch<ProductVariant>(
     `/backoffice/products/${productId}/variants/${variantId}`,
     input,
+  );
+
+/**
+ * یک آیتم «مشخصات شاخص» محصول (نواری که بالای صفحه‌ی محصول نمایش داده می‌شود).
+ * `icon` کلید آیکون سمت فرانت است (مثل `motor`)، نه آدرس تصویر.
+ */
+export type ProductHighlight = {
+  icon: string;
+  value: string;
+  label: string;
+};
+
+/**
+ * نقطه‌ی برچسب‌دار روی مدل سه‌بعدی — هنگام ارسال.
+ * `key` در هر محصول یکتاست (تکراری → ۴۰۰) و `position` سه‌تایی `[x, y, z]`
+ * در فضای مختصات خود مدل است (برخلاف `ProductPart.hotspot` درصد نیست).
+ */
+export type Model3dHotspotInput = {
+  key: string;
+  label: string;
+  description?: string | null;
+  position: [number, number, number];
+};
+
+/** همان نقطه در پاسخ بک‌اند؛ `id` جایگزین `key` برگشتی است */
+export type Model3dHotspot = {
+  id: string;
+  label: string;
+  description: string | null;
+  position: [number, number, number];
+};
+
+/** یک سند محصول (کاتالوگ/دفترچه/گواهی) — فایل آن از دامنه‌ی رسانه می‌آید */
+export type ProductDocument = {
+  id: string;
+  type: ProductDocumentType;
+  title: string;
+  url: string;
+  sizeKb: number | null;
+  locale: string | null;
+  updatedAt: string;
+};
+
+/** `mediaId` از `POST /backoffice/media/upload` (PDF با purpose = DATASHEET/ATTACHMENT) */
+export type CreateProductDocumentInput = {
+  mediaId: string;
+  type: ProductDocumentType;
+  title: string;
+  locale?: string | null;
+  sortOrder?: number;
+};
+
+/** همان فیلدهای ساخت، همه اختیاری */
+export type UpdateProductDocumentInput = Partial<CreateProductDocumentInput>;
+
+/** PUT /backoffice/products/{id}/highlights — کل نوار جایگزین می‌شود (خالی = حذف همه، حداکثر ۱۲) */
+export const replaceHighlights = (
+  productId: string,
+  highlights: ProductHighlight[],
+) =>
+  api.put<BackofficeProduct>(`/backoffice/products/${productId}/highlights`, {
+    highlights,
+  });
+
+/** PUT /backoffice/products/{id}/model3d-hotspots — کل نقاط جایگزین می‌شود (`key` یکتا) */
+export const replaceModel3dHotspots = (
+  productId: string,
+  hotspots: Model3dHotspotInput[],
+) =>
+  api.put<BackofficeProduct>(
+    `/backoffice/products/${productId}/model3d-hotspots`,
+    { hotspots },
+  );
+
+/** GET /backoffice/products/{id}/documents — مرتب بر اساس sortOrder */
+export const listDocuments = (productId: string) =>
+  api.get<ProductDocument[]>(`/backoffice/products/${productId}/documents`);
+
+/** POST /backoffice/products/{id}/documents → لیست کامل اسناد */
+export const createDocument = (
+  productId: string,
+  input: CreateProductDocumentInput,
+) =>
+  api.post<ProductDocument[]>(
+    `/backoffice/products/${productId}/documents`,
+    input,
+  );
+
+/** PATCH /backoffice/products/{id}/documents/{documentId} → لیست کامل اسناد */
+export const updateDocument = (
+  productId: string,
+  documentId: string,
+  input: UpdateProductDocumentInput,
+) =>
+  api.patch<ProductDocument[]>(
+    `/backoffice/products/${productId}/documents/${documentId}`,
+    input,
+  );
+
+/**
+ * DELETE /backoffice/products/{id}/documents/{documentId} — فقط رکورد سند؛
+ * خودِ فایل با `mediaApi.remove` حذف می‌شود.
+ */
+export const removeDocument = (productId: string, documentId: string) =>
+  api.delete<void>(
+    `/backoffice/products/${productId}/documents/${documentId}`,
   );

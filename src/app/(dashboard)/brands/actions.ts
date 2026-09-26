@@ -12,9 +12,10 @@ export async function createBrandAction(
   input: CreateBrandInput,
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    // logoUrl/authenticityNote در createBrandSchema نال‌پذیرند ولی کلیدشان
-    // الزامی است — برخلاف parentId/description در دامنه‌های دیگر، اینجا نباید
-    // با pruneNullish حذف شوند (حذف کلید = خطای «Required»، نه رفع خطا).
+    // authenticityNote در createBrandSchema نال‌پذیر است ولی کلیدش الزامی است —
+    // برخلاف parentId/description در دامنه‌های دیگر، اینجا نباید با pruneNullish
+    // حذف شود (حذف کلید = خطای «Required»، نه رفع خطا).
+    // لوگو دیگر در بدنه نمی‌آید؛ جدا روی /backoffice/media/upload آپلود می‌شود.
     const brand = await brandsApi.create(input);
     revalidatePath("/brands");
     return { ok: true, data: { id: brand.id } };

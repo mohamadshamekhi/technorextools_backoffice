@@ -1,13 +1,21 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Upload, X, Loader2, ImageIcon } from "lucide-react";
-import { uploadImageAction } from "@/lib/media-actions";
-import type { MediaPurpose } from "@/lib/api/backoffice/media";
+import { uploadImageAction, type UploadResult } from "@/lib/media-actions";
+import type { MediaOwnerType, MediaPurpose } from "@/lib/api/backoffice/media";
+
+/** مالک تصویر در بک‌اند؛ آپلود باید روی همین موجودیت انجام شود. */
+export type ImageOwner = { type: MediaOwnerType; id: string };
 
 /**
- * انتخاب و آپلود تصویر. فایل را به `uploadImageAction` می‌فرستد و آدرس عمومی برگشتی را
- * از طریق `onChange` به فرم می‌دهد؛ فرم همان url را در فیلد خودش ذخیره می‌کند.
+ * آپلود یک تصویر روی یک موجودیت. بک‌اند دیگر فیلد url را در بدنه‌ی موجودیت نمی‌پذیرد؛
+ * تصویر باید با `ownerType`/`ownerId` روی `POST /backoffice/media/upload` بارگذاری شود.
+ *
+ * دو حالت:
+ * - `owner` مشخص است (ویرایش) → فایل بلافاصله آپلود می‌شود و `onChange` با url عمومی صدا زده می‌شود.
+ * - `owner` نال است (ساخت؛ هنوز شناسه‌ای وجود ندارد) → فایل فقط پیش‌نمایش می‌شود و از طریق
+ *   `onFileSelect` به فرم داده می‌شود تا بعد از ساخت موجودیت با `uploadOwnedImage` آپلود شود.
  */
 export function ImageUploader({
   value,
@@ -15,16 +23,34 @@ export function ImageUploader({
   purpose,
   folder,
   alt,
+  owner,
+  onFileSelect,
 }: {
   value: string | null;
   onChange: (url: string | null) => void;
   purpose: MediaPurpose;
   folder: string;
   alt?: string;
+  /**
+   * `ImageOwner` → آپلود فوری روی همان موجودیت.
+   * `null` → تعویق تا ساخته‌شدن موجودیت (فقط پیش‌نمایش + `onFileSelect`).
+   * الزامی است تا هیچ آپلودی بدون `ownerType`/`ownerId` انجام نشود (چنین رکوردی
+   * به موجودیت نمی‌چسبد و در فروشگاه نمایش داده نمی‌شود).
+   */
+  owner: ImageOwner | null;
+  onFileSelect?: (file: File | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // پیش‌نمایش محلی برای حالت «هنوز آپلود نشده»
+  const [preview, setPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (preview) URL.revokeObjectURL(preview);
+    };
+  }, [preview]);
 
   function pick() {
     inputRef.current?.click();
@@ -35,17 +61,45 @@ export function ImageUploader({
     e.target.value = ""; // اجازه‌ی انتخاب دوباره‌ی همان فایل
     if (!file) return;
     setError(null);
-    const form = new FormData();
-    form.set("file", file);
-    form.set("purpose", purpose);
-    form.set("folder", folder);
-    if (alt) form.set("alt", alt);
+
+    if (owner === null) {
+      // ساخت موجودیت: آپلود موکول به بعد از گرفتن شناسه می‌شود
+      setPreview((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return URL.createObjectURL(file);
+      });
+      onFileSelect?.(file);
+      return;
+    }
+
     startTransition(async () => {
-      const res = await uploadImageAction(form);
-      if (res.ok) onChange(res.url);
-      else setError(res.message);
+      const res = await uploadOwnedImage(file, {
+        purpose,
+        folder,
+        alt,
+        ownerType: owner.type,
+        ownerId: owner.id,
+      });
+      if (res.ok) {
+        setPreview(null);
+        onFileSelect?.(null);
+        onChange(res.url);
+      } else {
+        setError(res.message);
+      }
     });
   }
+
+  function clear() {
+    setPreview((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    onFileSelect?.(null);
+    onChange(null);
+  }
+
+  const shown = preview ?? value;
 
   return (
     <div className="space-y-2">
@@ -57,17 +111,17 @@ export function ImageUploader({
         onChange={handleFile}
       />
 
-      {value ? (
+      {shown ? (
         <div className="relative inline-block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={value}
+            src={shown}
             alt={alt ?? "تصویر بارگذاری‌شده"}
             className="h-32 w-32 rounded-lg border object-cover"
           />
           <button
             type="button"
-            onClick={() => onChange(null)}
+            onClick={clear}
             aria-label="حذف تصویر"
             className="absolute -end-2 -top-2 rounded-full border bg-surface p-1 text-muted shadow-sm hover:text-danger"
           >
@@ -92,7 +146,7 @@ export function ImageUploader({
         </button>
       )}
 
-      {value && (
+      {shown && (
         <button
           type="button"
           onClick={pick}
@@ -108,7 +162,34 @@ export function ImageUploader({
         </button>
       )}
 
+      {preview && owner === null && (
+        <p className="text-xs text-muted">
+          تصویر پس از ثبت فرم بارگذاری می‌شود.
+        </p>
+      )}
+
       {error && <p className="text-sm text-danger">{error}</p>}
     </div>
   );
+}
+
+/** آپلود یک تصویر روی موجودیت مشخص؛ فرم‌ها بعد از ساخت موجودیت از این استفاده می‌کنند. */
+export async function uploadOwnedImage(
+  file: File,
+  fields: {
+    purpose: MediaPurpose;
+    folder: string;
+    alt?: string;
+    ownerType?: MediaOwnerType;
+    ownerId?: string;
+  },
+): Promise<UploadResult> {
+  const form = new FormData();
+  form.set("file", file);
+  form.set("purpose", fields.purpose);
+  form.set("folder", fields.folder);
+  if (fields.alt) form.set("alt", fields.alt);
+  if (fields.ownerType) form.set("ownerType", fields.ownerType);
+  if (fields.ownerId) form.set("ownerId", fields.ownerId);
+  return uploadImageAction(form);
 }

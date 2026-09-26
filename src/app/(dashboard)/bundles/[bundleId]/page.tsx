@@ -5,8 +5,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/link-button";
 import { DeleteButton } from "@/components/ui/delete-button";
-import { bundlesApi, inventoryApi, ApiError } from "@/lib/api";
+import { bundlesApi, inventoryApi, mediaApi, ApiError } from "@/lib/api";
 import { BundleForm } from "../bundle-form";
+import { BundleGallery } from "../bundle-gallery";
 import { deleteBundleAction } from "../actions";
 
 export const metadata: Metadata = { title: "ویرایش پکیج" };
@@ -27,7 +28,10 @@ export default async function BundleDetailPage({
   }
 
   // سقف واقعی take در listInventoryVariantsQuerySchema بک‌اند ۱۰۰ است؛ عدد بزرگ‌تر ۴۰۰ می‌دهد.
-  const { items: variants } = await inventoryApi.list({ take: 100 });
+  const [{ items: variants }, images] = await Promise.all([
+    inventoryApi.list({ take: 100 }),
+    mediaApi.listByOwner("BUNDLE", bundleId).catch(() => []),
+  ]);
   const deleteAction = deleteBundleAction.bind(null, bundleId);
 
   return (
@@ -44,6 +48,10 @@ export default async function BundleDetailPage({
       />
       <Card className="mb-4">
         <BundleForm bundle={bundle} variants={variants} />
+      </Card>
+      <Card className="mb-4">
+        <h2 className="mb-3 text-sm font-medium">تصاویر پکیج</h2>
+        <BundleGallery bundleId={bundleId} initial={images} />
       </Card>
       <DeleteButton action={deleteAction} redirectTo="/bundles">
         حذف پکیج

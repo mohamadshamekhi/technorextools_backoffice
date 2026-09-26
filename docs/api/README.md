@@ -8,12 +8,7 @@
 node scripts/gen-api-docs.mjs
 ```
 
-تعداد endpointها: 144
-
-> ۶ endpoint («تأیید دریافت وجه نقد» + ۵ مورد «روش‌های پرداخت» در `backoffice.md`) هنوز در
-> Postman collection نیستند و **دستی** اضافه شده‌اند. با اجرای بعدی `gen:api`، اگر این
-> endpointها به collection اضافه نشده باشند حذف می‌شوند — قبل از ری‌ژنریت، collection را
-> با آن‌ها هماهنگ کنید یا این یادداشت و بخش‌هایشان را دستی نگه دارید.
+تعداد endpointها: 148
 
 ## Base URLs
 
@@ -58,5 +53,13 @@ node scripts/gen-api-docs.mjs
 - `{{commentId}}`
 - `{{articleId}}`
 - `{{shippingMethodId}}`
+- `{{paymentMethodId}}`
+- `{{paymentMethodIdCash}}`
 - `{{bundleId}}`
 - `{{mediaId}}`
+- `{{notificationId}}`
+- `{{sparePartId}}`
+- `{{sparePartSlug}}`
+- `{{productDocumentId}}`
+- `{{productQuestionId}}`
+- `{{contactMessageId}}`

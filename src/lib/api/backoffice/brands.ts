@@ -6,16 +6,17 @@ export type BackofficeBrand = {
   id: string;
   title: string;
   slug: string;
+  /** فقط خواندنی — با آپلود رسانه (`ownerType=BRAND`, `purpose=LOGO`) ست می‌شود. */
   logoUrl: string | null;
   isExclusiveDistributor: boolean;
   authenticityNote: string | null;
   createdAt: string;
 };
 
+/** بدنه دیگر `logoUrl` نمی‌گیرد؛ لوگو با `POST /backoffice/media/upload` آپلود می‌شود. */
 export type CreateBrandInput = {
   title: string;
   slug: string;
-  logoUrl?: string | null;
   isExclusiveDistributor?: boolean;
   authenticityNote?: string | null;
 };

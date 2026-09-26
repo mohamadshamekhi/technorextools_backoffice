@@ -12,6 +12,7 @@ import {
 import { RichTextField } from "@/components/ui/rich-text-editor";
 import { createProductAction, updateProductAction } from "./actions";
 import { clearFieldError, invalid, type ActionResult, type FieldErrors } from "@/lib/forms";
+import { SLUG_HINT, SLUG_INVALID_MESSAGE, SLUG_PATTERN, sanitizeSlugInput } from "@/lib/slug";
 import type { BackofficeProduct } from "@/lib/api/backoffice/products";
 
 /** گزینه‌های انتخاب برند/دسته — از سرور پاس داده می‌شود */
@@ -47,6 +48,7 @@ export function ProductForm({
   const [isAmazingDeal, setIsAmazingDeal] = useState(
     product?.isAmazingDeal ?? false,
   );
+  const [isFeatured, setIsFeatured] = useState(product?.isFeatured ?? false);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,6 +56,7 @@ export function ProductForm({
     const errs: FieldErrors = {};
     if (!title.trim()) errs.title = "عنوان محصول الزامی است.";
     if (!slug.trim()) errs.slug = "اسلاگ الزامی است.";
+    else if (!SLUG_PATTERN.test(slug.trim())) errs.slug = SLUG_INVALID_MESSAGE;
     if (!categoryId) errs.categoryId = "انتخاب دسته‌بندی الزامی است.";
     if (!Number.isFinite(price) || price < 0) {
       errs.basePrice = "قیمت پایه نامعتبر است.";
@@ -74,6 +77,7 @@ export function ProductForm({
       basePrice: price,
       isActive,
       isAmazingDeal,
+      isFeatured,
     };
 
     startTransition(async () => {
@@ -102,9 +106,9 @@ export function ProductForm({
         label="اسلاگ"
         name="slug"
         dir="ltr"
-        hint="فقط حروف لاتین و خط تیره"
+        hint={SLUG_HINT}
         value={slug}
-        onChange={setSlug}
+        onChange={(v) => setSlug(sanitizeSlugInput(v))}
         errors={errors}
         onErrorClear={clearError}
       />
@@ -184,6 +188,12 @@ export function ProductForm({
         label="پیشنهاد شگفت‌انگیز"
         checked={isAmazingDeal}
         onChange={setIsAmazingDeal}
+      />
+      <CheckboxField
+        id="isFeatured"
+        label="نمایش در هیرو (محصول ویژه)"
+        checked={isFeatured}
+        onChange={setIsFeatured}
       />
 
       <div className="flex items-center gap-3">

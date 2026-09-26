@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
+import { RowActionsMenu } from "@/components/ui/row-actions-menu";
 import { ordersApi, guarded } from "@/lib/api";
 import {
   ORDER_PAYMENT_METHOD_LABELS,
@@ -59,6 +60,12 @@ const columns: Column<OrderListItem>[] = [
     ),
   },
   { key: "placedAt", header: "تاریخ", cell: (o) => formatDate(o.placedAt) },
+  {
+    key: "actions",
+    header: "",
+    className: "text-end",
+    cell: (o) => <RowActionsMenu viewHref={`/orders/${o.orderNumber}`} />,
+  },
 ];
 
 export default async function OrdersPage({

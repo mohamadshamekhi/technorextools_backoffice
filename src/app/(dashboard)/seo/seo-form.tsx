@@ -11,6 +11,15 @@ import { ImageUploader } from "@/components/ui/image-uploader";
 import { upsertSeoAction } from "./actions";
 import { clearFieldError, type ActionResult } from "@/lib/forms";
 import type { SeoEntityType, SeoMeta } from "@/lib/api/backoffice/content";
+import type { MediaOwnerType } from "@/lib/api/backoffice/media";
+
+/** تصویر OG روی خود موجودیت آپلود می‌شود، نه روی رکورد سئو. */
+const SEO_OWNER_TYPE: Record<SeoEntityType, MediaOwnerType> = {
+  product: "PRODUCT",
+  article: "ARTICLE",
+  category: "CATEGORY",
+  brand: "BRAND",
+};
 
 export function SeoForm({
   entityType,
@@ -46,7 +55,6 @@ export function SeoForm({
           entityId,
           metaTitle: metaTitle.trim() || null,
           metaDescription: metaDescription.trim() || null,
-          ogImage: ogImage.trim() || null,
           canonicalUrl: canonicalUrl.trim() || null,
         }),
       );
@@ -80,6 +88,7 @@ export function SeoForm({
             setOgImage(url ?? "");
             clearError("ogImage");
           }}
+          owner={{ type: SEO_OWNER_TYPE[entityType], id: entityId }}
           purpose="OG_IMAGE"
           folder="seo"
         />

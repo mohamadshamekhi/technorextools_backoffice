@@ -14,6 +14,8 @@ const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:4000/api/v1";
 export type ApiErrorBody = {
   message?: string;
   code?: string;
+  /** جزئیات ساختاریِ خطا؛ شرط‌ها باید روی `details.code` باشد نه متن پیام */
+  details?: { code?: string; [key: string]: unknown };
   errors?: Record<string, string[]>;
 };
 
@@ -34,6 +36,11 @@ export class ApiError extends Error {
   /** دسترسی غیرمجاز (permission کافی نیست) */
   get isForbidden(): boolean {
     return this.status === 403;
+  }
+
+  /** کد ساختاری خطا (`details.code` و در نبودش `code`) — مبنای شرط‌گذاری */
+  get code(): string | undefined {
+    return this.body.details?.code ?? this.body.code;
   }
 
   /** پیام فارسیِ قابل نمایش به کاربر */

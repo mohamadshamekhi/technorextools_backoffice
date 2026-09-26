@@ -18,12 +18,15 @@ export type SalesReport = {
 
 export type InventoryReport = {
   threshold: number;
-  lowStock: {
+  items: {
     variantId: string;
     productTitle: string;
     sku: string;
     stockQty: number;
   }[];
+  total: number;
+  skip: number;
+  take: number;
 };
 
 export type AdminLog = {

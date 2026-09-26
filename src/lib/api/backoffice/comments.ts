@@ -1,4 +1,4 @@
-import { api } from "../http";
+import { api, type Paginated } from "../http";
 import type { CommentStatus } from "./moderation";
 
 /** نظرات — docs/api/backoffice.md § Comments. Perm: `comments.moderate`. */
@@ -16,7 +16,9 @@ export type BackofficeComment = {
 
 /** GET /backoffice/comments?status= */
 export const list = (status?: CommentStatus) =>
-  api.get<BackofficeComment[]>("/backoffice/comments", { query: { status } });
+  api.get<Paginated<BackofficeComment>>("/backoffice/comments", {
+    query: { status },
+  });
 
 /** PATCH /backoffice/comments/{id} */
 export const moderate = (id: string, status: CommentStatus) =>

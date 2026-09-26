@@ -5,13 +5,17 @@ import { Card } from "@/components/ui/card";
 import { Tabs } from "@/components/ui/tabs";
 import { LinkButton } from "@/components/ui/link-button";
 import { DeleteButton } from "@/components/ui/delete-button";
-import { productsApi, mediaApi, inventoryApi, categoriesApi, guardedResource } from "@/lib/api";
+import { productsApi, sparePartsApi, mediaApi, inventoryApi, categoriesApi, guardedResource } from "@/lib/api";
 import { formatToman } from "@/lib/format";
 import { ProductForm } from "../product-form";
 import { ProductGallery } from "../product-gallery";
 import { ProductVariants } from "../product-variants";
 import { ProductSpecs } from "../product-specs";
 import { ProductFiles } from "../product-files";
+import { ProductParts } from "../product-parts";
+import { ProductHighlights } from "../product-highlights";
+import { ProductHotspots } from "../product-hotspots";
+import { ProductDocuments } from "../product-documents";
 import { loadProductRefs } from "../product-refs";
 import { deleteProductAction } from "../actions";
 import type { BackofficeProduct, ProductVariant } from "@/lib/api/backoffice/products";
@@ -44,16 +48,27 @@ export default async function ProductDetailPage({
     loadProductRefs(),
   ]);
 
-  const [images, variantsInitial, attributeGroups, allMedia] = await Promise.all([
+  const [
+    images,
+    variantsInitial,
+    attributeGroups,
+    allMedia,
+    allSpareParts,
+    documents,
+  ] = await Promise.all([
     resolveImages(product, productId),
     resolveVariants(product, productId),
     product.category
       ? categoriesApi.listAttributeGroups(product.category.id).catch(() => [])
       : Promise.resolve([]),
     mediaApi.listByOwner("PRODUCT", productId).catch(() => []),
+    sparePartsApi.list({ take: 100 }).catch(() => []),
+    // اگر پاسخ جزئیات محصول اسناد را نداشت، از endpoint اختصاصی می‌خوانیم
+    product.documents ?? productsApi.listDocuments(productId).catch(() => []),
   ]);
   const catalogFile = allMedia.find((m) => m.purpose === "DATASHEET") ?? null;
   const modelFile = allMedia.find((m) => m.purpose === "MODEL_3D") ?? null;
+  const explodedViewFile = allMedia.find((m) => m.purpose === "EXPLODED_VIEW") ?? null;
 
   return (
     <>
@@ -117,7 +132,48 @@ export default async function ProductDetailPage({
                   productId={productId}
                   initialCatalog={catalogFile}
                   initialModel={modelFile}
+                  initialExplodedView={explodedViewFile}
                 />
+              ),
+            },
+            {
+              id: "parts",
+              label: "قطعات نقشه انفجاری",
+              content: (
+                <ProductParts
+                  productId={productId}
+                  initialParts={product.parts ?? []}
+                  explodedViewUrl={explodedViewFile?.url ?? null}
+                  catalog={allSpareParts}
+                />
+              ),
+            },
+            {
+              id: "highlights",
+              label: "مشخصات شاخص",
+              content: (
+                <ProductHighlights
+                  productId={productId}
+                  initialHighlights={product.highlights ?? []}
+                />
+              ),
+            },
+            // {
+            //   id: "model3d-hotspots",
+            //   label: "نقاط مدل سه‌بعدی",
+            //   content: (
+            //     <ProductHotspots
+            //       productId={productId}
+            //       initialHotspots={product.model3dHotspots ?? []}
+            //       model3dUrl={modelFile?.url ?? product.model3dUrl ?? null}
+            //     />
+            //   ),
+            // },
+            {
+              id: "documents",
+              label: "مدارک",
+              content: (
+                <ProductDocuments productId={productId} initialDocuments={documents} />
               ),
             },
           ]}

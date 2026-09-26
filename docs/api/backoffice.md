@@ -233,11 +233,43 @@ Perm: `users.manage`. Body: `updateUserSchema` (partial). `roleId` assigns a rol
 
 ```json
 {
-  "title": "تکنورکس",
+  "title": "پوما ایر",
   "slug": "puma-air",
   "logoUrl": "https://cdn.example.com/puma.png",
   "isExclusiveDistributor": true,
   "authenticityNote": "نمایندگی انحصاری ابزار بادی پوما"
+}
+```
+
+### POST /backoffice/brands/import
+
+**Import Brands (crawler)**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+```json
+{
+  "source": "https://example-tools.ir",
+  "dryRun": false,
+  "replaceLogo": false,
+  "brands": [
+    {
+      "title": "Bosch",
+      "slug": "bosch",
+      "isExclusiveDistributor": false,
+      "authenticityNote": "وارداتی اصل آلمان",
+      "logoSourceUrl": "https://example-tools.ir/img/brands/bosch.png"
+    },
+    {
+      "title": "Makita",
+      "slug": "makita",
+      "logoSourceUrl": "https://example-tools.ir/img/brands/makita.png"
+    },
+    {
+      "title": "رونیکس",
+      "slug": "ronix"
+    }
+  ]
 }
 ```
 
@@ -249,7 +281,7 @@ Perm: `users.manage`. Body: `updateUserSchema` (partial). `roleId` assigns a rol
 
 ```json
 {
-  "title": "تکنورکس",
+  "title": "پوما ایر",
   "isExclusiveDistributor": true
 }
 ```
@@ -454,10 +486,7 @@ Perm: `users.manage`. Body: `updateUserSchema` (partial). `roleId` assigns a rol
 
 ### PATCH /backoffice/orders/{{orderNumber}}/confirm-cash-payment
 
-**Confirm Cash Payment** _(دستی — هنوز در Postman collection نیست، README.md را ببینید)_
-
-Perm: `orders.manage`. بدون body. فقط روی سفارش با `paymentMethod: "cash"` و
-`status: "pending_payment"` کار می‌کند؛ روی موفقیت سفارش `paid` می‌شود.
+**Confirm Cash Payment**
 
 - auth: (inherits collection default: Bearer {{accessToken}})
 
@@ -471,74 +500,6 @@ Perm: `orders.manage`. بدون body. فقط روی سفارش با `paymentMeth
 - query:
   - `skip=0`
   - `take=20`
-
-## Payment Methods
-
-_(دستی — هنوز در Postman collection نیست، README.md را ببینید)_
-
-دو ردیف پیش‌فرض seed شده‌اند (`code: "online"` و `code: "cash"`)؛ افزودن روش دلخواه هم
-مجاز است. `code` فقط هنگام ساخت تعیین می‌شود و بعدش تغییرناپذیر است (در بدنه‌ی PATCH
-ارسال نمی‌شود).
-
-### GET /backoffice/payment-methods
-
-**List Payment Methods**
-
-Perm: `payment-methods.manage`.
-
-- auth: (inherits collection default: Bearer {{accessToken}})
-
-### GET /backoffice/payment-methods/{{id}}
-
-**Payment Method Detail**
-
-Perm: `payment-methods.manage`.
-
-- auth: (inherits collection default: Bearer {{accessToken}})
-
-### POST /backoffice/payment-methods
-
-**Create Payment Method**
-
-Perm: `payment-methods.manage`.
-
-- auth: (inherits collection default: Bearer {{accessToken}})
-
-```json
-{
-  "code": "cod-express",
-  "title": "پرداخت در محل (اکسپرس)",
-  "description": "...",
-  "isActive": true,
-  "sortOrder": 3
-}
-```
-
-### PATCH /backoffice/payment-methods/{{id}}
-
-**Update Payment Method**
-
-Perm: `payment-methods.manage`. `code` را در بدنه ارسال نکنید — تغییرناپذیر است.
-`isActive: false` واقعاً در چک‌اوت مشتری اعمال می‌شود (روش از انتخاب سفارش جدید حذف می‌شود).
-
-- auth: (inherits collection default: Bearer {{accessToken}})
-
-```json
-{
-  "title": "پرداخت آنلاین (زرین‌پال)",
-  "description": "...",
-  "isActive": true,
-  "sortOrder": 1
-}
-```
-
-### DELETE /backoffice/payment-methods/{{id}}
-
-**Delete Payment Method**
-
-Perm: `payment-methods.manage`.
-
-- auth: (inherits collection default: Bearer {{accessToken}})
 
 ## Shipping Methods
 
@@ -580,6 +541,57 @@ Perm: `payment-methods.manage`.
 ### DELETE /backoffice/shipping-methods/{{shippingMethodId}}
 
 **Delete Shipping Method**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+## Payment Methods
+
+### GET /backoffice/payment-methods
+
+**List Payment Methods**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+### POST /backoffice/payment-methods
+
+**Create Payment Method**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+```json
+{
+  "code": "cash",
+  "title": "پرداخت در محل",
+  "description": "پرداخت نقدی هنگام تحویل",
+  "isActive": true,
+  "sortOrder": 2
+}
+```
+
+### GET /backoffice/payment-methods/{{paymentMethodId}}
+
+**Payment Method Detail**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+### PATCH /backoffice/payment-methods/{{paymentMethodId}}
+
+**Update Payment Method**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+```json
+{
+  "title": "پرداخت آنلاین (زرین‌پال)",
+  "description": "پرداخت امن با کارت‌های بانکی عضو شتاب",
+  "isActive": true,
+  "sortOrder": 1
+}
+```
+
+### DELETE /backoffice/payment-methods/{{paymentMethodId}}
+
+**Delete Payment Method**
 
 - auth: (inherits collection default: Bearer {{accessToken}})
 
@@ -743,6 +755,19 @@ Perm: `payment-methods.manage`.
   - `skip=0`
   - `take=20`
 
+### PATCH /backoffice/repairs/{{repairId}}
+
+**Update Repair (technician findings)**
+
+- auth: (inherits collection default: Bearer {{accessToken}})
+
+```json
+{
+  "technicianNote": "برد اصلی سوخته و باید تعویض شود",
+  "estimatedCost": 1850000
+}
+```
+
 ### PATCH /backoffice/repairs/{{repairId}}/status
 
 **Set Repair Status**
@@ -751,7 +776,8 @@ Perm: `payment-methods.manage`.
 
 ```json
 {
-  "status": "in_progress"
+  "status": "in_progress",
+  "note": "قطعه معیوب تعویض شد"
 }
 ```
 

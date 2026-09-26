@@ -11,6 +11,7 @@ export type BackofficeCategory = {
   sortOrder: number;
   isActive: boolean;
   createdAt: string;
+  imageUrl: string | null;
 };
 
 export type CategoryTreeNode = BackofficeCategory & { children: CategoryTreeNode[] };
@@ -26,6 +27,7 @@ export type CreateCategoryInput = {
   parentId?: string | null;
   sortOrder?: number;
   isActive?: boolean;
+  imageUrl?: string | null;
 };
 export type UpdateCategoryInput = Partial<CreateCategoryInput>;
 

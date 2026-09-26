@@ -73,7 +73,7 @@ export default async function ReportsPage({
           ) : (
             <p className="mt-4 text-sm text-danger">گزارش فروش در دسترس نیست.</p>
           )}
-          {sales.status === "fulfilled" && sales.value.daily.length > 0 && (
+          {sales.status === "fulfilled" && (sales.value.daily?.length ?? 0) > 0 && (
             <div className="mt-4 overflow-x-auto">
               <table className="w-full min-w-[24rem] text-sm">
                 <thead>
@@ -84,7 +84,7 @@ export default async function ReportsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {sales.value.daily.map((d) => (
+                  {(sales.value.daily ?? []).map((d) => (
                     <tr key={d.date} className="border-b last:border-0">
                       <td className="px-3 py-2">{formatDate(d.date)}</td>
                       <td className="px-3 py-2 tabular-nums">
@@ -113,14 +113,14 @@ export default async function ReportsPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {inventory.value.lowStock.length === 0 ? (
+                  {inventory.value.items.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="px-3 py-8 text-center text-muted">
                         همه کالاها موجودی کافی دارند.
                       </td>
                     </tr>
                   ) : (
-                    inventory.value.lowStock.map((r) => (
+                    inventory.value.items.map((r) => (
                       <tr key={r.variantId} className="border-b last:border-0">
                         <td className="px-3 py-2">{r.productTitle}</td>
                         <td className="px-3 py-2" dir="ltr">
