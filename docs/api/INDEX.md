@@ -1,0 +1,163 @@
+# API index
+
+همه‌ی endpointها. جزئیات هر بخش در فایل هم‌نام.
+
+## Auth — `auth.md` (6)
+
+- `POST /auth/otp/request` — Request OTP
+- `POST /auth/otp/verify` — Verify OTP
+- `POST /auth/refresh` — Refresh Token
+- `GET /auth/me` — Get Current User
+- `POST /auth/logout` — Logout
+- `PATCH /auth/me` — Update Profile
+
+## Backoffice — `backoffice.md` (95)
+
+- `GET /backoffice/access/permissions` — List Permissions
+- `GET /backoffice/access/roles` — List Roles
+- `POST /backoffice/access/roles` — Create Role
+- `PATCH /backoffice/access/roles/{{roleId}}` — Update Role
+- `DELETE /backoffice/access/roles/{{roleId}}` — Delete Role
+- `GET /backoffice/users?skip=0&take=20` — List Users
+- `GET /backoffice/users/{{userId}}` — Get User By ID
+- `PATCH /backoffice/users/{{userId}}` — Update User
+- `GET /backoffice/categories?skip=0&take=20&search&isActive` — List Categories
+- `GET /backoffice/categories/tree` — Category Tree
+- `POST /backoffice/categories` — Create Category
+- `PATCH /backoffice/categories/{{categoryId}}` — Update Category
+- `DELETE /backoffice/categories/{{categoryId}}` — Delete Category
+- `GET /backoffice/categories/{{categoryId}}/attribute-groups` — List Attribute Groups
+- `POST /backoffice/categories/{{categoryId}}/attribute-groups` — Create Attribute Group
+- `PATCH /backoffice/attribute-groups/{{attributeGroupId}}` — Update Attribute Group
+- `DELETE /backoffice/attribute-groups/{{attributeGroupId}}` — Delete Attribute Group
+- `POST /backoffice/attribute-groups/{{attributeGroupId}}/attributes` — Create Attribute
+- `PATCH /backoffice/attributes/{{attributeId}}` — Update Attribute
+- `DELETE /backoffice/attributes/{{attributeId}}` — Delete Attribute
+- `GET /backoffice/brands` — List Brands
+- `POST /backoffice/brands` — Create Brand
+- `POST /backoffice/brands/import` — Import Brands (crawler)
+- `PATCH /backoffice/brands/{{brandId}}` — Update Brand
+- `DELETE /backoffice/brands/{{brandId}}` — Delete Brand
+- `GET /backoffice/products?skip=0&take=20&search&categoryId={{categoryId}}&brandId={{brandId}}&isActive&isAmazingDeal` — List Products
+- `GET /backoffice/products/{{productId}}` — Get Product
+- `POST /backoffice/products` — Create Product
+- `PATCH /backoffice/products/{{productId}}` — Update Product
+- `DELETE /backoffice/products/{{productId}}` — Delete Product
+- `PUT /backoffice/products/{{productId}}/attribute-values` — Replace Attribute Values
+- `PUT /backoffice/products/{{productId}}/related` — Replace Related
+- `POST /backoffice/products/{{productId}}/variants` — Create Variant
+- `PATCH /backoffice/products/{{productId}}/variants/{{variantId}}` — Update Variant
+- `GET /backoffice/inventory/variants?skip=0&take=20&productId={{productId}}&search&lowStock` — List Variants
+- `PATCH /backoffice/inventory/variants/{{inventoryVariantId}}` — Update Variant Stock/Price
+- `PUT /backoffice/inventory/variants/{{inventoryVariantId}}/price-tiers` — Replace Price Tiers
+- `GET /backoffice/orders?skip=0&take=20` — List Orders
+- `GET /backoffice/orders/{{orderNumber}}` — Order Detail
+- `PATCH /backoffice/orders/{{orderNumber}}/status` — Set Order Status
+- `PATCH /backoffice/orders/{{orderNumber}}/confirm-cash-payment` — Confirm Cash Payment
+- `GET /backoffice/payments?skip=0&take=20` — List Payments
+- `GET /backoffice/shipping-methods` — List Shipping Methods
+- `POST /backoffice/shipping-methods` — Create Shipping Method
+- `PATCH /backoffice/shipping-methods/{{shippingMethodId}}` — Update Shipping Method
+- `DELETE /backoffice/shipping-methods/{{shippingMethodId}}` — Delete Shipping Method
+- `GET /backoffice/payment-methods` — List Payment Methods
+- `POST /backoffice/payment-methods` — Create Payment Method
+- `GET /backoffice/payment-methods/{{paymentMethodId}}` — Payment Method Detail
+- `PATCH /backoffice/payment-methods/{{paymentMethodId}}` — Update Payment Method
+- `DELETE /backoffice/payment-methods/{{paymentMethodId}}` — Delete Payment Method
+- `GET /backoffice/discounts?skip=0&take=20` — List Discounts
+- `GET /backoffice/discounts/{{discountId}}` — Discount Detail
+- `GET /backoffice/discounts/{{discountId}}/usages` — Discount Usages
+- `POST /backoffice/discounts` — Create Discount
+- `PATCH /backoffice/discounts/{{discountId}}` — Update Discount
+- `DELETE /backoffice/discounts/{{discountId}}` — Delete Discount
+- `GET /backoffice/comments?status=pending` — List Comments
+- `PATCH /backoffice/comments/{{commentId}}` — Moderate Comment
+- `GET /backoffice/tickets?skip=0&take=20` — List Tickets
+- `GET /backoffice/tickets/{{ticketId}}` — Ticket Detail
+- `POST /backoffice/tickets/{{ticketId}}/messages` — Reply Ticket
+- `PATCH /backoffice/tickets/{{ticketId}}/status` — Set Ticket Status
+- `GET /backoffice/warranties?orderId={{orderId}}` — List Order Warranties
+- `POST /backoffice/warranties` — Issue Warranty
+- `GET /backoffice/repairs?skip=0&take=20` — List Repair Requests
+- `PATCH /backoffice/repairs/{{repairId}}` — Update Repair (technician findings)
+- `PATCH /backoffice/repairs/{{repairId}}/status` — Set Repair Status
+- `GET /backoffice/content/articles?skip=0&take=20` — List Articles
+- `GET /backoffice/content/articles/{{articleId}}` — Get Article
+- `POST /backoffice/content/articles` — Create Article
+- `PATCH /backoffice/content/articles/{{articleId}}` — Update Article
+- `DELETE /backoffice/content/articles/{{articleId}}` — Delete Article
+- `GET /backoffice/content/branches` — List Branches
+- `POST /backoffice/content/branches` — Create Branch
+- `PATCH /backoffice/content/branches/{{branchId}}` — Update Branch
+- `DELETE /backoffice/content/branches/{{branchId}}` — Delete Branch
+- `GET /backoffice/content/seo?entityType=product&entityId={{productId}}` — Get SEO Meta
+- `POST /backoffice/content/seo` — Upsert SEO Meta
+- `GET /backoffice/settings` — List Settings
+- `PUT /backoffice/settings` — Put Settings
+- `GET /backoffice/bundles` — List Bundles
+- `GET /backoffice/bundles/{{bundleId}}` — Bundle Detail
+- `POST /backoffice/bundles` — Create Bundle
+- `PATCH /backoffice/bundles/{{bundleId}}` — Update Bundle
+- `DELETE /backoffice/bundles/{{bundleId}}` — Delete Bundle
+- `GET /backoffice/loyalty/{{userId}}?skip=0&take=20` — User Loyalty Summary
+- `POST /backoffice/loyalty/{{userId}}/adjust` — Adjust User Points
+- `GET /backoffice/reports/sales?from=2026-08-01&to=2026-09-09` — Sales Report
+- `GET /backoffice/reports/inventory?threshold=5` — Inventory Report
+- `GET /backoffice/reports/admin-logs?skip=0&take=50` — Admin Action Logs
+- `POST /backoffice/media/upload` — Upload File
+- `GET /backoffice/media?ownerType=PRODUCT&ownerId={{productId}}` — List Media by Owner
+- `PATCH /backoffice/media/{{mediaId}}` — Update Media
+- `DELETE /backoffice/media/{{mediaId}}` — Delete Media
+
+## Storefront — `storefront.md` (46)
+
+- `GET /storefront/catalog/categories` — Category Tree
+- `GET /storefront/catalog/brands` — List Brands
+- `GET /storefront/catalog/products?skip=0&take=20&search&category=pneumatic-tools&brand&minPrice&maxPrice&isAmazingDeal=true&sort=newest&attrs` — List Products
+- `GET /storefront/catalog/products/{{productSlug}}` — Product Detail
+- `GET /storefront/catalog/products/{{productSlug}}/comments?skip=0&take=10` — Product Comments
+- `GET /storefront/catalog/bundles` — List Bundles
+- `GET /storefront/catalog/bundles/{{bundleSlug}}` — Bundle Detail
+- `POST /storefront/catalog/products/{{productSlug}}/comments` — Post Product Comment
+- `GET /storefront/cart` — Get Cart
+- `POST /storefront/cart/items` — Add Item
+- `PATCH /storefront/cart/items/{{cartItemId}}` — Update Item Qty
+- `DELETE /storefront/cart/items/{{cartItemId}}` — Remove Item
+- `DELETE /storefront/cart` — Clear Cart
+- `POST /storefront/cart/bundles` — Add Bundle To Cart
+- `GET /storefront/content/articles?skip=0&take=12` — List Articles
+- `GET /storefront/content/articles/{{articleSlug}}` — Article Detail
+- `GET /storefront/content/branches` — List Branches
+- `GET /storefront/content/branches/{{branchId}}` — Branch Detail
+- `GET /storefront/content/seo?entityType=product&entityId={{productId}}` — SEO Meta
+- `GET /storefront/content/settings/public` — Public Settings
+- `GET /storefront/shipping/methods` — List Shipping Methods
+- `GET /storefront/payment-methods` — List Payment Methods
+- `GET /storefront/warranty/verify?serial={{warrantySerial}}` — Verify Warranty
+- `GET /storefront/addresses` — List Addresses
+- `POST /storefront/addresses` — Create Address
+- `PATCH /storefront/addresses/{{addressId}}` — Update Address
+- `DELETE /storefront/addresses/{{addressId}}` — Delete Address
+- `GET /storefront/wishlist` — List Wishlist
+- `POST /storefront/wishlist` — Add To Wishlist
+- `DELETE /storefront/wishlist/{{productId}}` — Remove From Wishlist
+- `POST /storefront/checkout/quote` — Checkout Quote
+- `POST /storefront/checkout` — Start Checkout
+- `POST /storefront/checkout` — Start Checkout (Cash)
+- `POST /storefront/checkout/{{orderNumber}}/pay` — Retry Payment
+- `GET /storefront/orders?skip=0&take=20` — List My Orders
+- `GET /storefront/orders/{{orderNumber}}` — Order Detail
+- `POST /storefront/discounts/validate` — Validate Discount
+- `GET /storefront/loyalty?skip=0&take=20` — Loyalty Summary
+- `GET /storefront/loyalty/referrals` — My Referrals
+- `GET /storefront/tickets?skip=0&take=20` — List Tickets
+- `POST /storefront/tickets` — Create Ticket
+- `GET /storefront/tickets/{{ticketId}}` — Ticket Detail
+- `POST /storefront/tickets/{{ticketId}}/messages` — Reply Ticket
+- `GET /storefront/repairs?skip=0&take=20` — List Repair Requests
+- `POST /storefront/repairs` — Create Repair Request
+- `GET /storefront/repairs/{{repairId}}` — Repair Request Detail
+
+## Health — `health.md` (1)
+
+- `GET {{baseUrl}}/health` — Health Check
