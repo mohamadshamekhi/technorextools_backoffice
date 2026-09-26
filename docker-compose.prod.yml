@@ -1,0 +1,26 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        API_BASE_URL: ${API_BASE_URL}
+        API_SERVICE_TOKEN: ${API_SERVICE_TOKEN}
+    image: abzar-backoffice:latest
+    container_name: abzar-backoffice
+    restart: unless-stopped
+    env_file: .env.production
+    # فقط روی لوپ‌بک: TLS را nginx هاست ترمینیت می‌کند و به اینجا پراکسی می‌دهد.
+    ports:
+      - '127.0.0.1:3001:3001'
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:3001/api/health']
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '3'

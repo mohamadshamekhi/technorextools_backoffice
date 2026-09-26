@@ -7,6 +7,8 @@ export const metadata: Metadata = {
     template: "%s | پنل مدیریت",
   },
   description: "بک‌آفیس و پنل مدیریت وبسایت",
+  // پنل داخلی است؛ هیچ صفحه‌ای نباید ایندکس شود (nginx هم X-Robots-Tag می‌فرستد)
+  robots: { index: false, follow: false, nocache: true },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

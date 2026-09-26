@@ -4,6 +4,7 @@ import { fail, type ActionResult } from "@/lib/forms";
 import { revalidatePath } from "next/cache";
 import { bundlesApi, mediaApi, ApiError } from "@/lib/api";
 import { pruneNullish } from "@/lib/prune";
+import { variantFieldKey } from "./field-keys";
 import type {
   BundleWarning,
   CreateBundleInput,
@@ -12,11 +13,6 @@ import type {
 
 /** داده‌ی پاسخ موفق ساخت/ویرایش پکیج */
 export type BundleSaveData = { id: string; warnings: BundleWarning[] };
-
-/** کلید خطای فیلدیِ یک ردیف پکیج؛ فرم با همین کلید ردیف را هایلایت می‌کند */
-export function variantFieldKey(variantId: string): string {
-  return `variant:${variantId}`;
-}
 
 /**
  * خطاهای شناخته‌شده‌ی پکیج را به `ActionResult` تبدیل می‌کند. شرط روی `details.code`

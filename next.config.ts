@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // خروجی خودکفا برای ایمیج سبک داکر (deploy/Dockerfile)
+  output: "standalone",
   experimental: {
     // فعال‌سازی forbidden() / unauthorized() برای نمایش صفحه‌ی اختصاصی «عدم دسترسی»
     authInterrupts: true,

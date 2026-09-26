@@ -10,6 +10,8 @@ import { ACCESS_TOKEN_COOKIE } from "@/lib/auth";
  */
 
 const BASE_URL = process.env.API_BASE_URL ?? "http://localhost:4000/api/v1";
+/** توکن سرویس‌به‌سرویس؛ اگر ست باشد روی هدر X-Service-Token می‌رود (مسیرهای /backoffice/*) */
+const SERVICE_TOKEN = process.env.API_SERVICE_TOKEN;
 
 export type ApiErrorBody = {
   message?: string;
@@ -102,6 +104,7 @@ async function request<T>(
   const isForm = typeof FormData !== "undefined" && body instanceof FormData;
 
   const headers: Record<string, string> = { Accept: "application/json" };
+  if (SERVICE_TOKEN) headers["X-Service-Token"] = SERVICE_TOKEN;
   if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
 
   if (auth) {

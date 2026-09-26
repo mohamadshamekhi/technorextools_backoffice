@@ -14,9 +14,9 @@ import { SearchableSelect, type SearchableSelectOption } from "@/components/ui/s
 import {
   createBundleAction,
   updateBundleAction,
-  variantFieldKey,
   type BundleSaveData,
 } from "./actions";
+import { variantFieldKey } from "./field-keys";
 import { clearFieldError, fieldError, invalid, type ActionResult, type FieldErrors } from "@/lib/forms";
 import { SLUG_HINT, SLUG_INVALID_MESSAGE, SLUG_PATTERN, sanitizeSlugInput } from "@/lib/slug";
 import type { BackofficeBundle, BundleWarning } from "@/lib/api/backoffice/bundles";

@@ -94,6 +94,6 @@ async function tryRefresh(refreshToken: string): Promise<RefreshedTokens | null>
 export const config = {
   // همه مسیرها به‌جز استاتیک‌ها
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!api/health|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };
