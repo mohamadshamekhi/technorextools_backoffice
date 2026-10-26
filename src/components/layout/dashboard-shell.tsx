@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 import { navItems, type NavItem } from "@/lib/navigation";
 import { logoutAction } from "@/lib/auth-actions";
+import { getBadgeCountsAction } from "@/lib/badge-actions";
+import type { BadgeCounts } from "@/lib/api/backoffice/badges";
+import { toPersianDigits } from "@/lib/format";
 import type { SessionUser } from "@/lib/api/auth";
 
 /** حروف اول نام برای آواتار — حداکثر دو حرف */
@@ -39,7 +42,33 @@ function groupBySection(
   return groups;
 }
 
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+/** فاصله‌ی به‌روزرسانی خودکار شمارنده‌ها */
+const BADGE_REFRESH_MS = 60_000;
+
+/** شمارنده‌ی موارد در انتظار رسیدگی؛ صفر نمایش داده نمی‌شود */
+function CountBadge({ count, tone = "solid" }: { count?: number; tone?: "solid" | "soft" }) {
+  if (!count) return null;
+  return (
+    <span
+      className={`ms-auto inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-bold leading-none tabular-nums ${
+        tone === "solid"
+          ? "bg-danger text-white"
+          : "bg-danger-surface text-danger"
+      }`}
+      aria-label={`${toPersianDigits(count)} مورد در انتظار رسیدگی`}
+    >
+      {count > 99 ? "+۹۹" : toPersianDigits(count)}
+    </span>
+  );
+}
+
+function SidebarContent({
+  badges,
+  onNavigate,
+}: {
+  badges: BadgeCounts;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const groups = useMemo(() => groupBySection(navItems), []);
   const activeSection = navItems.find((item) =>
@@ -108,6 +137,10 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             isItemActive(item, pathname)
           );
           const HeaderIcon = group.items[0].icon;
+          const groupCount = group.items.reduce(
+            (sum, item) => sum + (item.badge ? badges[item.badge] ?? 0 : 0),
+            0
+          );
 
           return (
             <div key={group.section}>
@@ -126,6 +159,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                 <span className="flex-1 truncate text-start">
                   {group.section}
                 </span>
+                {!isOpen && <CountBadge count={groupCount} tone="soft" />}
                 <ChevronDown
                   className={`size-4 shrink-0 transition-transform ${
                     isOpen ? "rotate-180" : ""
@@ -146,6 +180,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
                         className={linkClass(isActive)}
                       >
                         <span className="truncate">{item.title}</span>
+                        {item.badge && <CountBadge count={badges[item.badge]} />}
                       </Link>
                     );
                   })}
@@ -161,12 +196,40 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 
 export function DashboardShell({
   user,
+  initialBadges,
   children,
 }: {
   user: SessionUser;
+  initialBadges: BadgeCounts;
   children: React.ReactNode;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+
+  // شمارنده‌ها: مقدار اولیه از layout؛ با revalidate شدن layout (بعد از اکشن‌ها) هم‌گام می‌شود
+  const [badges, setBadges] = useState(initialBadges);
+  const [trackedInitial, setTrackedInitial] = useState(initialBadges);
+  if (initialBadges !== trackedInitial) {
+    setTrackedInitial(initialBadges);
+    setBadges(initialBadges);
+  }
+
+  // با هر ناوبری و هر یک دقیقه از سرور تازه می‌شوند (رندر اول از layout آمده)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    let cancelled = false;
+    const refresh = () =>
+      void getBadgeCountsAction().then((next) => {
+        if (!cancelled) setBadges(next);
+      });
+    if (isFirstRender.current) isFirstRender.current = false;
+    else refresh();
+    const timer = setInterval(refresh, BADGE_REFRESH_MS);
+    return () => {
+      cancelled = true;
+      clearInterval(timer);
+    };
+  }, [pathname]);
   const [isPending, startTransition] = useTransition();
 
   /** خروج: باطل کردن سشن سمت سرور و بازگشت به لاگین (ریدایرکت داخل اکشن) */
@@ -190,7 +253,7 @@ export function DashboardShell({
     <div className="flex min-h-screen">
       {/* سایدبار دسکتاپ */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 border-l bg-surface lg:block xl:w-72">
-        <SidebarContent />
+        <SidebarContent badges={badges} />
       </aside>
 
       {/* سایدبار موبایل */}
@@ -211,7 +274,10 @@ export function DashboardShell({
             mobileOpen ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <SidebarContent onNavigate={() => setMobileOpen(false)} />
+          <SidebarContent
+            badges={badges}
+            onNavigate={() => setMobileOpen(false)}
+          />
         </aside>
       </div>
 

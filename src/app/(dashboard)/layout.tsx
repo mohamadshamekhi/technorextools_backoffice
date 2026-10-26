@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/layout/dashboard-shell";
 import { getCurrentUser } from "@/lib/session";
 import { ApiError } from "@/lib/api";
+import { getBadgeCountsAction } from "@/lib/badge-actions";
 
 export default async function DashboardLayout({
   children,
@@ -19,5 +20,11 @@ export default async function DashboardLayout({
     throw error;
   }
 
-  return <DashboardShell user={user}>{children}</DashboardShell>;
+  const badges = await getBadgeCountsAction();
+
+  return (
+    <DashboardShell user={user} initialBadges={badges}>
+      {children}
+    </DashboardShell>
+  );
 }
