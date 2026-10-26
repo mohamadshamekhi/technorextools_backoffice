@@ -22,6 +22,7 @@ export * as ticketsApi from "./backoffice/tickets";
 export * as warrantiesApi from "./backoffice/warranties";
 export * as shippingApi from "./backoffice/shipping";
 export * as inventoryApi from "./backoffice/inventory";
+export * as badgesApi from "./backoffice/badges";
 export * as loyaltyApi from "./backoffice/loyalty";
 export * as accessApi from "./backoffice/access";
 export * as paymentsApi from "./backoffice/payments";

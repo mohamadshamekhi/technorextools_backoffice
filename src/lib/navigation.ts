@@ -28,6 +28,7 @@ import {
   BarChart3,
   type LucideIcon,
 } from "lucide-react";
+import type { BadgeKey } from "@/lib/api/backoffice/badges";
 
 export type NavItem = {
   title: string;
@@ -35,6 +36,8 @@ export type NavItem = {
   icon: LucideIcon;
   /** عنوان بخش سایدبار؛ آیتم‌های هم‌بخش زیر یک تیتر جمع می‌شوند */
   section: string;
+  /** کلید شمارنده‌ی «در انتظار رسیدگی» از GET /backoffice/badges */
+  badge?: BadgeKey;
 };
 
 /**
@@ -62,17 +65,17 @@ export const navItems: NavItem[] = [
   { title: "نقش‌ها و دسترسی", href: "/roles", icon: ShieldCheck, section: "مشتریان" },
   { title: "باشگاه مشتریان", href: "/loyalty", icon: Award, section: "مشتریان" },
 
-  { title: "تیکت‌ها", href: "/tickets", icon: LifeBuoy, section: "پشتیبانی" },
-  { title: "نظرات", href: "/comments", icon: MessageSquare, section: "پشتیبانی" },
-  { title: "تعمیرات", href: "/repairs", icon: Wrench, section: "پشتیبانی" },
-  { title: "گارانتی‌ها", href: "/warranties", icon: FileText, section: "پشتیبانی" },
-  { title: "پرسش‌های محصول", href: "/product-questions", icon: MessageCircleQuestion, section: "پشتیبانی" },
-  { title: "پیام‌های تماس", href: "/contact-messages", icon: Mail, section: "پشتیبانی" },
+  { title: "تیکت‌ها", href: "/tickets", icon: LifeBuoy, section: "پشتیبانی", badge: "tickets" },
+  { title: "نظرات", href: "/comments", icon: MessageSquare, section: "پشتیبانی", badge: "comments" },
+  { title: "تعمیرات", href: "/repairs", icon: Wrench, section: "پشتیبانی", badge: "repairs" },
+  { title: "گارانتی‌ها", href: "/warranties", icon: FileText, section: "پشتیبانی", badge: "warranties" },
+  { title: "پرسش‌های محصول", href: "/product-questions", icon: MessageCircleQuestion, section: "پشتیبانی", badge: "productQuestions" },
+  { title: "پیام‌های تماس", href: "/contact-messages", icon: Mail, section: "پشتیبانی", badge: "contactMessages" },
 
   { title: "مقالات", href: "/articles", icon: Newspaper, section: "محتوا" },
   { title: "شعب", href: "/branches", icon: MapPin, section: "محتوا" },
   { title: "سئو", href: "/seo", icon: Search, section: "محتوا" },
-  { title: "خبرنامه", href: "/newsletter", icon: Send, section: "محتوا" },
+  { title: "خبرنامه", href: "/newsletter", icon: Send, section: "محتوا", badge: "newsletter" },
 
   { title: "گزارش‌ها", href: "/reports", icon: BarChart3, section: "سیستم" },
   { title: "تنظیمات", href: "/settings", icon: Settings, section: "سیستم" },

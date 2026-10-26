@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { DataTable, type Column } from "@/components/ui/data-table";
 import { Pagination } from "@/components/ui/pagination";
 import { Badge } from "@/components/ui/badge";
-import { newsletterApi, guarded } from "@/lib/api";
+import { newsletterApi, badgesApi, guarded } from "@/lib/api";
 import type { NewsletterSubscriber } from "@/lib/api/backoffice/newsletter";
 import { parsePageParams } from "@/lib/pagination";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -51,6 +51,8 @@ export default async function NewsletterPage({
   const { items, total } = await guarded(
     newsletterApi.list({ skip, take, isActive: activeFilter.isActive }),
   );
+  // دیدن این صفحه یعنی مشترکین جدید دیده شده‌اند — شمارنده‌ی سایدبار صفر شود
+  await badgesApi.markSeen("newsletter").catch(() => undefined);
 
   return (
     <>
