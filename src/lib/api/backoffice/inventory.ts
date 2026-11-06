@@ -17,7 +17,7 @@ export type InventoryVariant = {
   stockQty: number;
   priceOverride: number | null;
   weightGrams: number | null;
-  basePrice: number;
+  productBasePrice: number;
   priceTiers: PriceTier[];
   isActive: boolean;
 };
