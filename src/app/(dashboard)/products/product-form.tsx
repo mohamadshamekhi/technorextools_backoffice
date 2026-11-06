@@ -191,7 +191,7 @@ export function ProductForm({
       />
       <CheckboxField
         id="isFeatured"
-        label="نمایش در هیرو (محصول ویژه)"
+        label="نمایش در اسلایدر هیرو صفحه اصلی (حداکثر ۴ محصول)"
         checked={isFeatured}
         onChange={setIsFeatured}
       />

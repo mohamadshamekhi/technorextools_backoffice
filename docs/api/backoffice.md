@@ -702,7 +702,7 @@ Perm: `users.manage`. Body: `updateUserSchema` (partial). `roleId` assigns a rol
 
 ```json
 {
-  "body": "سلام، گارانتی ۱۸ ماهه است."
+  "body": "سلام، گارانتی ۶ ماهه است."
 }
 ```
 

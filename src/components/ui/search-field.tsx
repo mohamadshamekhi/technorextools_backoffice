@@ -50,7 +50,7 @@ export function SearchField({
         onChange={(e) => setValue(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full rounded-lg border bg-surface py-2 pe-9 ps-3 text-sm outline-none focus:border-primary"
+        className="w-full rounded-lg border bg-surface py-2 ps-9 pe-9 text-sm outline-none focus:border-primary"
       />
       {isPending && (
         <Loader2 className="absolute end-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted" />

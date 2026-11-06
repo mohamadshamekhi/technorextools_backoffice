@@ -88,7 +88,7 @@ export function InventoryRow({ variant }: { variant: InventoryVariant }) {
               type="number"
               dir="ltr"
               min={0}
-              placeholder={String(variant.basePrice)}
+              placeholder={String(variant.productBasePrice)}
               value={price}
               onChange={(e) => { setPrice(e.target.value); clearError("priceOverride"); }}
               aria-invalid={Boolean(fieldError(error, "priceOverride")) || undefined}

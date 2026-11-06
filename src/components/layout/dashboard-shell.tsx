@@ -7,7 +7,7 @@ import {
   ChevronDown,
   Menu,
   LogOut,
-  PanelsTopLeft,
+  
   Loader2,
 } from "lucide-react";
 import { navItems, type NavItem } from "@/lib/navigation";
@@ -106,9 +106,8 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col bg-surface text-foreground">
       <div className="flex h-16 items-center gap-3 border-b px-5">
-        <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-          <PanelsTopLeft className="size-5" />
-        </span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.svg" alt="" className="h-8 w-auto" />
         <span className="text-[15px] font-bold leading-tight">پنل مدیریت</span>
       </div>
 
