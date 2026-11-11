@@ -24,6 +24,8 @@ export type InventoryVariant = {
 
 export type ListInventoryQuery = ListQuery & {
   productId?: string;
+  categoryId?: string;
+  brandId?: string;
   search?: string;
   lowStock?: boolean;
 };
