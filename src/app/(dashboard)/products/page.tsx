@@ -12,6 +12,8 @@ import type { BackofficeProduct } from "@/lib/api/backoffice/products";
 import { parsePageParams } from "@/lib/pagination";
 import { formatToman } from "@/lib/format";
 import { deleteProductAction } from "./actions";
+import { loadProductRefs } from "./product-refs";
+import { CatalogFilterButton } from "@/components/ui/catalog-filter-button";
 
 export const metadata: Metadata = { title: "محصولات" };
 
@@ -64,10 +66,15 @@ export default async function ProductsPage({
   const sp = await searchParams;
   const { skip, take } = parsePageParams(sp);
   const search = typeof sp.search === "string" ? sp.search : undefined;
+  const categoryId = typeof sp.categoryId === "string" ? sp.categoryId : undefined;
+  const brandId = typeof sp.brandId === "string" ? sp.brandId : undefined;
+  const isActive =
+    sp.isActive === "true" ? true : sp.isActive === "false" ? false : undefined;
 
-  const { items, total } = await guarded(
-    productsApi.list({ skip, take, search }),
-  );
+  const [{ items, total }, { brands, categories }] = await Promise.all([
+    guarded(productsApi.list({ skip, take, search, categoryId, brandId, isActive })),
+    loadProductRefs(),
+  ]);
 
   return (
     <>
@@ -77,6 +84,13 @@ export default async function ProductsPage({
         actions={
           <>
             <SearchField placeholder="نام محصول…" />
+            <CatalogFilterButton
+              title="فیلتر محصولات"
+              basePath="/products"
+              categories={categories}
+              brands={brands}
+              showStatus
+            />
             <LinkButton href="/products/bulk-price-update" variant="ghost">
               <Percent className="size-4" />
               تغییر قیمت گروهی
@@ -98,7 +112,7 @@ export default async function ProductsPage({
 
       <Pagination
         basePath="/products"
-        params={{ search }}
+        params={{ search, categoryId, brandId, isActive: isActive === undefined ? undefined : String(isActive) }}
         total={total}
         skip={skip}
         take={take}

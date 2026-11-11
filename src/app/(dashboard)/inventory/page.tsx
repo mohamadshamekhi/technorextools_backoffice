@@ -3,8 +3,10 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ui/page-header";
 import { Pagination } from "@/components/ui/pagination";
 import { SearchField } from "@/components/ui/search-field";
+import { CatalogFilterButton } from "@/components/ui/catalog-filter-button";
 import { inventoryApi } from "@/lib/api";
 import { parsePageParams } from "@/lib/pagination";
+import { loadProductRefs } from "../products/product-refs";
 import { InventoryRow } from "./inventory-row";
 
 export const metadata: Metadata = { title: "انبار" };
@@ -20,20 +22,37 @@ export default async function InventoryPage({
   const { skip, take } = parsePageParams(sp);
   const search = typeof sp.search === "string" ? sp.search : undefined;
   const lowStock = sp.lowStock === "1";
+  const categoryId = typeof sp.categoryId === "string" ? sp.categoryId : undefined;
+  const brandId = typeof sp.brandId === "string" ? sp.brandId : undefined;
 
-  const { items, total } = await inventoryApi.list({
-    skip,
-    take,
-    search,
-    lowStock: lowStock || undefined,
-  });
+  const [{ items, total }, { brands, categories }] = await Promise.all([
+    inventoryApi.list({
+      skip,
+      take,
+      search,
+      lowStock: lowStock || undefined,
+      categoryId,
+      brandId,
+    }),
+    loadProductRefs(),
+  ]);
 
   return (
     <>
       <PageHeader
         title="انبار"
         description="ویرایش سریع موجودی و قیمت تنوع‌های محصول"
-        actions={<SearchField placeholder="نام محصول یا SKU…" />}
+        actions={
+          <>
+            <SearchField placeholder="نام محصول یا SKU…" />
+            <CatalogFilterButton
+              title="فیلتر انبار"
+              basePath="/inventory"
+              categories={categories}
+              brands={brands}
+            />
+          </>
+        }
       />
 
       <div className="mb-4">
@@ -75,7 +94,7 @@ export default async function InventoryPage({
 
       <Pagination
         basePath="/inventory"
-        params={{ search, lowStock: lowStock ? "1" : undefined }}
+        params={{ search, lowStock: lowStock ? "1" : undefined, categoryId, brandId }}
         total={total}
         skip={skip}
         take={take}

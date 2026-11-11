@@ -14,9 +14,9 @@ import { createProductAction, updateProductAction } from "./actions";
 import { clearFieldError, invalid, type ActionResult, type FieldErrors } from "@/lib/forms";
 import { SLUG_HINT, SLUG_INVALID_MESSAGE, SLUG_PATTERN, sanitizeSlugInput } from "@/lib/slug";
 import type { BackofficeProduct } from "@/lib/api/backoffice/products";
+import type { RefOption } from "@/components/ui/catalog-filter-button";
 
-/** گزینه‌های انتخاب برند/دسته — از سرور پاس داده می‌شود */
-export type RefOption = { id: string; title: string };
+export type { RefOption };
 
 export function ProductForm({
   product,
